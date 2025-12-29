@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">🐞 Bug Detail</h4>
+    <a href="/bugs" class="btn btn-outline-secondary btn-sm">
+        ← Back to Bugs
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <small class="text-muted">Title</small>
+                <div class="fw-semibold">{{ bug[1] }}</div>
+            </div>
+
+            <div class="col-md-6 text-md-end">
+                <small class="text-muted">Status</small><br>
+                <span class="badge 
+                    {% if bug[6]=='Open' %} bg-secondary
+                    {% elif bug[6]=='Fixed' %} bg-warning text-dark
+                    {% else %} bg-success {% endif %}">
+                    {{ bug[6] }}
+                </span>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <small class="text-muted">Severity</small><br>
+                <span class="badge bg-danger">{{ bug[5] }}</span>
+            </div>
+
+            <div class="col-md-4">
+                <small class="text-muted">Priority</small><br>
+                <span class="badge bg-warning text-dark">{{ bug[8] }}</span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <small class="text-muted">Steps to Reproduce</small>
+            <div class="border rounded p-2 bg-light">
+                {{ bug[2] }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <small class="text-muted">Expected Result</small>
+            <div class="border rounded p-2 bg-light">
+                {{ bug[3] }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <small class="text-muted">Actual Result</small>
+            <div class="border rounded p-2 bg-light">
+                {{ bug[4] }}
+            </div>
+        </div>
+
+        {% if bug[7] %}
+        <div class="mb-3">
+            <small class="text-muted">Screenshot</small><br>
+            <img src="{{ url_for('static', filename='uploads/' + bug[7]) }}"
+                 class="img-fluid border rounded mt-1">
+        </div>
+        {% endif %}
+
+        <hr>
+
+        <form method="post" action="/update-status/{{ bug[0] }}" class="d-flex align-items-center gap-2">
+            <label class="mb-0">Update Status</label>
+            <select name="status" class="form-select form-select-sm w-auto">
+                <option {% if bug[6]=='Open' %}selected{% endif %}>Open</option>
+                <option {% if bug[6]=='Fixed' %}selected{% endif %}>Fixed</option>
+                <option {% if bug[6]=='Closed' %}selected{% endif %}>Closed</option>
+            </select>
+            <button class="btn btn-primary btn-sm">Save</button>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

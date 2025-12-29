@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">➕ Add Test Case</h4>
+    <a href="/testcases" class="btn btn-outline-secondary btn-sm">
+        ← Back to Test Cases
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <form method="post">
+
+            <div class="mb-3">
+                <label class="form-label">Module</label>
+                <input type="text"
+                       name="module"
+                       class="form-control"
+                       placeholder="Login / Signup / Checkout"
+                       required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Test Scenario</label>
+                <input type="text"
+                       name="scenario"
+                       class="form-control"
+                       placeholder="Verify login with valid credentials"
+                       required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Test Steps</label>
+                <textarea name="steps"
+                          class="form-control"
+                          rows="4"
+                          placeholder="1. Open login page&#10;2. Enter valid username & password&#10;3. Click Login"
+                          required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Expected Result</label>
+                <textarea name="expected"
+                          class="form-control"
+                          rows="3"
+                          placeholder="User should be logged in successfully"
+                          required></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Initial Status</label>
+                <select name="status" class="form-select">
+                    <option>Not Run</option>
+                    <option>Pass</option>
+                    <option>Fail</option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-success">
+                    Save Test Case
+                </button>
+                <a href="/testcases" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

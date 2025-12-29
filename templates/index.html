@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="text-center">
+    <h1 class="mb-3">QA Buddy</h1>
+    <p class="lead">Manual QA Bug & Test Case Management Tool</p>
+</div>
+
+<div class="row mt-4">
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">🐞 Bug Management</h5>
+                <a href="/add-bug" class="btn btn-primary me-2">➕ Add Bug</a>
+                <a href="/bugs" class="btn btn-outline-primary">📋 View Bugs</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">🧪 Test Case Management</h5>
+                <a href="/add-testcase" class="btn btn-success me-2">➕ Add Test Case</a>
+                <a href="/testcases" class="btn btn-outline-success">📋 View Test Cases</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

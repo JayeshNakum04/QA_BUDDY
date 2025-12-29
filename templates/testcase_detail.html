@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">🧪 Test Case Detail</h4>
+    <a href="/testcases" class="btn btn-outline-secondary btn-sm">
+        ← Back to Test Cases
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <small class="text-muted">Module</small>
+                <div class="fw-semibold">{{ tc[1] }}</div>
+            </div>
+
+            <div class="col-md-6 text-md-end">
+                <small class="text-muted">Status</small><br>
+                <span class="badge
+                    {% if tc[5]=='Pass' %} bg-success
+                    {% elif tc[5]=='Fail' %} bg-danger
+                    {% else %} bg-secondary {% endif %}">
+                    {{ tc[5] }}
+                </span>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="mb-3">
+            <small class="text-muted">Scenario</small>
+            <div class="fw-semibold">{{ tc[2] }}</div>
+        </div>
+
+        <div class="mb-3">
+            <small class="text-muted">Test Steps</small>
+            <div class="border rounded p-2 bg-light">
+                {{ tc[3] }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <small class="text-muted">Expected Result</small>
+            <div class="border rounded p-2 bg-light">
+                {{ tc[4] }}
+            </div>
+        </div>
+
+        <hr>
+
+        <form method="post" action="/update-testcase-status/{{ tc[0] }}" class="d-flex align-items-center gap-2">
+            <label class="me-2 mb-0">Update Status</label>
+            <select name="status" class="form-select form-select-sm w-auto">
+                <option {% if tc[5]=='Not Run' %}selected{% endif %}>Not Run</option>
+                <option {% if tc[5]=='Pass' %}selected{% endif %}>Pass</option>
+                <option {% if tc[5]=='Fail' %}selected{% endif %}>Fail</option>
+            </select>
+            <button class="btn btn-primary btn-sm">Save</button>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
