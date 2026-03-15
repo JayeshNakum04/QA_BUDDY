@@ -1,75 +1,260 @@
 {% extends "base.html" %}
+{% block breadcrumb %}Test Cases / Add New{% endblock %}
+
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">➕ Add Test Case</h4>
-    <a href="/testcases" class="btn btn-outline-secondary btn-sm">
-        ← Back to Test Cases
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Add Test Case</h1>
+        <p class="page-subtitle">Define a new test case with steps and expected outcome</p>
+    </div>
+    <a href="/testcases" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Test Cases
     </a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
+<!-- ── Form ──────────────────────────────────────────────────── -->
+<form method="post">
+<div style="display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start;">
 
-        <form method="post">
+    <!-- Left Column — Main Fields -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
 
-            <div class="mb-3">
-                <label class="form-label">Module</label>
-                <input type="text"
-                       name="module"
-                       class="form-control"
-                       placeholder="Login / Signup / Checkout"
-                       required>
+        <!-- Identity -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-pencil" style="margin-right:7px; color:var(--zinc);"></i>Test Case Information</h6>
             </div>
+            <div style="padding:20px 22px; display:flex; flex-direction:column; gap:16px;">
 
-            <div class="mb-3">
-                <label class="form-label">Test Scenario</label>
-                <input type="text"
-                       name="scenario"
-                       class="form-control"
-                       placeholder="Verify login with valid credentials"
-                       required>
+                <div>
+                    <label class="form-label">Module <span style="color:var(--red);">*</span></label>
+                    <input type="text"
+                           name="module"
+                           class="form-control"
+                           placeholder="e.g. Login, Signup, Checkout, Dashboard"
+                           required>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px;">
+                        <i class="bi bi-info-circle"></i> The feature or section being tested
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Test Scenario <span style="color:var(--red);">*</span></label>
+                    <input type="text"
+                           name="scenario"
+                           class="form-control"
+                           placeholder="e.g. Verify login with valid credentials"
+                           required>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px;">
+                        <i class="bi bi-info-circle"></i> A short description of what is being tested
+                    </div>
+                </div>
+
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Test Steps</label>
-                <textarea name="steps"
-                          class="form-control"
-                          rows="4"
-                          placeholder="1. Open login page&#10;2. Enter valid username & password&#10;3. Click Login"
-                          required></textarea>
+        <!-- Steps & Expected -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-list-ol" style="margin-right:7px; color:var(--zinc);"></i>Test Execution</h6>
             </div>
+            <div style="padding:20px 22px; display:flex; flex-direction:column; gap:16px;">
 
-            <div class="mb-3">
-                <label class="form-label">Expected Result</label>
-                <textarea name="expected"
-                          class="form-control"
-                          rows="3"
-                          placeholder="User should be logged in successfully"
-                          required></textarea>
+                <div>
+                    <label class="form-label">Test Steps <span style="color:var(--red);">*</span></label>
+                    <textarea name="steps"
+                              class="form-control"
+                              rows="6"
+                              placeholder="1. Open the login page&#10;2. Enter a valid username&#10;3. Enter a valid password&#10;4. Click the Login button&#10;5. Observe the result"
+                              required></textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px;">
+                        <i class="bi bi-info-circle"></i> Number each step on a new line for clarity
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">
+                        <i class="bi bi-check2-circle" style="color:var(--green); margin-right:4px;"></i>
+                        Expected Result <span style="color:var(--red);">*</span>
+                    </label>
+                    <textarea name="expected"
+                              class="form-control"
+                              rows="3"
+                              placeholder="e.g. User is redirected to the dashboard and sees a welcome message"
+                              required></textarea>
+                </div>
+
             </div>
+        </div>
 
-            <div class="mb-4">
-                <label class="form-label">Initial Status</label>
-                <select name="status" class="form-select">
-                    <option>Not Run</option>
-                    <option>Pass</option>
-                    <option>Fail</option>
-                </select>
+    </div>
+
+    <!-- Right Column — Settings -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Technique Selector -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-diagram-3" style="margin-right:7px; color:var(--zinc);"></i>Test Design</h6>
             </div>
+            <div style="padding:18px 20px; display:flex; flex-direction:column; gap:14px;">
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-success">
-                    Save Test Case
+                <div>
+                    <label class="form-label">Test Design Technique <span style="color:var(--red);">*</span></label>
+                    <select name="technique" class="form-select" id="techniqueSelect"
+                            onchange="updateTechniqueInfo()" required>
+                        <option value="">— Select a Technique —</option>
+                        <option value="Equivalence Partitioning">Equivalence Partitioning</option>
+                        <option value="Boundary Value Analysis">Boundary Value Analysis</option>
+                        <option value="Decision Table Testing">Decision Table Testing</option>
+                        <option value="State Transition Testing">State Transition Testing</option>
+                        <option value="Exploratory Testing">Exploratory Testing</option>
+                    </select>
+                </div>
+
+                <!-- Technique Info Card -->
+                <div id="techniqueInfo"
+                     style="display:none; background:var(--blue-bg); border:1px solid var(--blue-border);
+                            border-radius:var(--radius-sm); padding:10px 12px;">
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase;
+                                letter-spacing:.6px; color:var(--blue); margin-bottom:5px;">
+                        About this technique
+                    </div>
+                    <div id="techniqueText" style="font-size:12.5px; color:var(--text-secondary); line-height:1.6;">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Initial Status -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-flag" style="margin-right:7px; color:var(--zinc);"></i>Initial Status</h6>
+            </div>
+            <div style="padding:18px 20px;">
+                <label class="form-label">Set starting execution status</label>
+                <div style="display:flex; flex-direction:column; gap:8px;" id="statusOptions">
+
+                    <label class="status-option" style="display:flex; align-items:center; gap:10px; padding:10px 12px;
+                           border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer;
+                           transition: border-color var(--transition), background var(--transition);">
+                        <input type="radio" name="status" value="Not Run" checked
+                               style="accent-color:var(--zinc);" onchange="highlightStatus()">
+                        <span class="badge badge-zinc" style="pointer-events:none;">
+                            <i class="bi bi-dash-circle" style="font-size:9px;"></i> Not Run
+                        </span>
+                        <span style="font-size:12.5px; color:var(--text-muted);">Not yet executed</span>
+                    </label>
+
+                    <label class="status-option" style="display:flex; align-items:center; gap:10px; padding:10px 12px;
+                           border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer;
+                           transition: border-color var(--transition), background var(--transition);">
+                        <input type="radio" name="status" value="Pass"
+                               style="accent-color:var(--green);" onchange="highlightStatus()">
+                        <span class="badge badge-green" style="pointer-events:none;">
+                            <i class="bi bi-check-circle-fill" style="font-size:9px;"></i> Pass
+                        </span>
+                        <span style="font-size:12.5px; color:var(--text-muted);">Test passed</span>
+                    </label>
+
+                    <label class="status-option" style="display:flex; align-items:center; gap:10px; padding:10px 12px;
+                           border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer;
+                           transition: border-color var(--transition), background var(--transition);">
+                        <input type="radio" name="status" value="Fail"
+                               style="accent-color:var(--red);" onchange="highlightStatus()">
+                        <span class="badge badge-red" style="pointer-events:none;">
+                            <i class="bi bi-x-circle-fill" style="font-size:9px;"></i> Fail
+                        </span>
+                        <span style="font-size:12.5px; color:var(--text-muted);">Test failed</span>
+                    </label>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="card">
+            <div style="padding:18px 20px; display:flex; flex-direction:column; gap:10px;">
+                <button type="submit" class="btn btn-success w-full">
+                    <i class="bi bi-clipboard2-check-fill"></i> Save Test Case
                 </button>
-                <a href="/testcases" class="btn btn-outline-secondary">
-                    Cancel
+                <a href="/testcases" class="btn btn-outline w-full" style="justify-content:center;">
+                    <i class="bi bi-x"></i> Cancel
                 </a>
             </div>
+        </div>
 
-        </form>
+        <!-- Tips -->
+        <div style="background:var(--surface-2); border:1px solid var(--border-light);
+                    border-radius:var(--radius-lg); padding:16px 18px;">
+            <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase;
+                        letter-spacing:.7px; color:var(--text-muted); margin-bottom:10px;">
+                <i class="bi bi-lightbulb"></i> Tips
+            </div>
+            <ul style="font-size:12.5px; color:var(--text-muted); padding-left:16px; margin:0; line-height:1.9;">
+                <li>One test case = one scenario</li>
+                <li>Steps should be clear and repeatable</li>
+                <li>Expected result must be measurable</li>
+                <li>Group related cases under the same module</li>
+            </ul>
+        </div>
 
     </div>
 </div>
+</form>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ── Technique descriptions ────────────────────────────────
+    const techniques = {
+        'Equivalence Partitioning':  'Divides input data into valid/invalid partitions. Only one value per partition is tested, reducing total test cases.',
+        'Boundary Value Analysis':   'Tests values at the edges of input ranges — minimum, maximum, and just inside/outside boundaries where bugs are most likely.',
+        'Decision Table Testing':    'Maps combinations of conditions to expected actions in a table. Useful for business rules with multiple input conditions.',
+        'State Transition Testing':  'Tests how a system moves between states based on events or inputs. Ideal for workflows, logins, and order processes.',
+        'Exploratory Testing':       'Simultaneous learning, test design, and execution. Testers explore the application without a predefined script.',
+    };
+
+    function updateTechniqueInfo() {
+        const val  = document.getElementById('techniqueSelect').value;
+        const box  = document.getElementById('techniqueInfo');
+        const text = document.getElementById('techniqueText');
+        if (val && techniques[val]) {
+            text.textContent = techniques[val];
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+        }
+    }
+
+    // ── Status radio highlight ────────────────────────────────
+    function highlightStatus() {
+        document.querySelectorAll('.status-option').forEach(label => {
+            const radio = label.querySelector('input[type=radio]');
+            if (radio.checked) {
+                label.style.borderColor = 'var(--accent)';
+                label.style.background  = 'var(--surface-2)';
+            } else {
+                label.style.borderColor = 'var(--border)';
+                label.style.background  = '';
+            }
+        });
+    }
+
+    // Highlight default on load
+    highlightStatus();
+
+    // ── Responsive layout ─────────────────────────────────────
+    function adjustLayout() {
+        const grid = document.querySelector('form > div');
+        if (!grid) return;
+        grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 320px';
+    }
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
+</script>
 {% endblock %}

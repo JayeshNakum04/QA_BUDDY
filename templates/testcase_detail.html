@@ -1,67 +1,183 @@
 {% extends "base.html" %}
+{% block breadcrumb %}Test Cases / Detail{% endblock %}
+
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">🧪 Test Case Detail</h4>
-    <a href="/testcases" class="btn btn-outline-secondary btn-sm">
-        ← Back to Test Cases
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Test Case Detail</h1>
+        <p class="page-subtitle">Full test case information and execution status</p>
+    </div>
+    <a href="/testcases" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Test Cases
     </a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
+<!-- ── Main Grid ─────────────────────────────────────────────── -->
+<div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <small class="text-muted">Module</small>
-                <div class="fw-semibold">{{ tc[1] }}</div>
-            </div>
+    <!-- Left Column — Test Case Info -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
 
-            <div class="col-md-6 text-md-end">
-                <small class="text-muted">Status</small><br>
-                <span class="badge
-                    {% if tc[5]=='Pass' %} bg-success
-                    {% elif tc[5]=='Fail' %} bg-danger
-                    {% else %} bg-secondary {% endif %}">
-                    {{ tc[5] }}
-                </span>
+        <!-- Title Card -->
+        <div class="card">
+            <div style="padding:20px 22px;">
+
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:11px; font-family:'DM Mono',monospace; letter-spacing:.7px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">
+                            Test Case #{{ tc[0] }}
+                        </div>
+                        <h2 style="font-size:17px; font-weight:600; margin:0; color:var(--text-primary);">
+                            {{ tc[2] }}
+                        </h2>
+                    </div>
+
+                    <!-- Status badge -->
+                    {% if tc[5] == 'Pass' %}
+                        <span class="badge badge-green" style="font-size:12px; padding:5px 12px;">
+                            <i class="bi bi-check-circle-fill" style="font-size:10px;"></i> Pass
+                        </span>
+                    {% elif tc[5] == 'Fail' %}
+                        <span class="badge badge-red" style="font-size:12px; padding:5px 12px;">
+                            <i class="bi bi-x-circle-fill" style="font-size:10px;"></i> Fail
+                        </span>
+                    {% else %}
+                        <span class="badge badge-zinc" style="font-size:12px; padding:5px 12px;">
+                            <i class="bi bi-dash-circle" style="font-size:10px;"></i> Not Run
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- Module + Technique pills -->
+                <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--border-light); border-radius:var(--radius-sm); padding:5px 12px;">
+                        <span style="font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.5px;">Module</span>
+                        <span style="font-size:13px; font-weight:500; color:var(--text-primary);">{{ tc[1] }}</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:6px; background:var(--blue-bg); border:1px solid var(--blue-border); border-radius:var(--radius-sm); padding:5px 12px;">
+                        <span style="font-size:11px; color:var(--blue); font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.5px;">Technique</span>
+                        <span style="font-size:13px; font-weight:500; color:var(--blue);">{{ tc[6] if tc[6] else '—' }}</span>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <hr>
-
-        <div class="mb-3">
-            <small class="text-muted">Scenario</small>
-            <div class="fw-semibold">{{ tc[2] }}</div>
-        </div>
-
-        <div class="mb-3">
-            <small class="text-muted">Test Steps</small>
-            <div class="border rounded p-2 bg-light">
-                {{ tc[3] }}
+        <!-- Test Steps -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-list-ol" style="margin-right:7px; color:var(--zinc);"></i>Test Steps</h6>
+            </div>
+            <div style="padding:18px 22px;">
+                <pre style="font-family:'DM Sans',sans-serif; font-size:13.5px; color:var(--text-primary); white-space:pre-wrap; margin:0; line-height:1.8;">{{ tc[3] }}</pre>
             </div>
         </div>
 
-        <div class="mb-3">
-            <small class="text-muted">Expected Result</small>
-            <div class="border rounded p-2 bg-light">
-                {{ tc[4] }}
+        <!-- Expected Result -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-check2-circle" style="margin-right:7px; color:var(--green);"></i>Expected Result</h6>
+            </div>
+            <div style="padding:18px 22px;">
+                <p style="font-size:13.5px; color:var(--text-primary); margin:0; line-height:1.7; white-space:pre-wrap;">{{ tc[4] }}</p>
             </div>
         </div>
 
-        <hr>
+    </div>
 
-        <form method="post" action="/update-testcase-status/{{ tc[0] }}" class="d-flex align-items-center gap-2">
-            <label class="me-2 mb-0">Update Status</label>
-            <select name="status" class="form-select form-select-sm w-auto">
-                <option {% if tc[5]=='Not Run' %}selected{% endif %}>Not Run</option>
-                <option {% if tc[5]=='Pass' %}selected{% endif %}>Pass</option>
-                <option {% if tc[5]=='Fail' %}selected{% endif %}>Fail</option>
-            </select>
-            <button class="btn btn-primary btn-sm">Save</button>
-        </form>
+    <!-- Right Column — Actions & Meta -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Update Status -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-arrow-repeat" style="margin-right:7px;"></i>Update Status</h6>
+            </div>
+            <div style="padding:16px 18px;">
+                <form method="post" action="/update-testcase-status/{{ tc[0] }}">
+                    <label class="form-label">Set execution result</label>
+                    <select name="status" class="form-select mb-3">
+                        <option {% if tc[5]=='Not Run' %}selected{% endif %}>Not Run</option>
+                        <option {% if tc[5]=='Pass' %}selected{% endif %}>Pass</option>
+                        <option {% if tc[5]=='Fail' %}selected{% endif %}>Fail</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="bi bi-check2"></i> Save Status
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Meta Info -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-info-circle" style="margin-right:7px;"></i>Meta</h6>
+            </div>
+            <div style="padding:14px 18px; display:flex; flex-direction:column; gap:12px;">
+
+                <div>
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:3px;">Test Case ID</div>
+                    <div style="font-size:13.5px; font-weight:500;">#{{ tc[0] }}</div>
+                </div>
+
+                <hr class="divider" style="margin:0;">
+
+                <div>
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:3px;">Module</div>
+                    <div style="font-size:13.5px;">{{ tc[1] }}</div>
+                </div>
+
+                <hr class="divider" style="margin:0;">
+
+                <div>
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:3px;">Technique</div>
+                    <div style="font-size:13.5px;">{{ tc[6] if tc[6] else '—' }}</div>
+                </div>
+
+                <hr class="divider" style="margin:0;">
+
+                <div>
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:3px;">Current Status</div>
+                    <div style="font-size:13.5px;">{{ tc[5] }}</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card" style="border-color:var(--red-border);">
+            <div class="card-header-bar" style="border-color:var(--red-border);">
+                <h6 style="color:var(--red);"><i class="bi bi-exclamation-triangle" style="margin-right:7px;"></i>Danger Zone</h6>
+            </div>
+            <div style="padding:14px 18px;">
+                <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">
+                    Permanently delete this test case. This cannot be undone.
+                </p>
+                <form method="post" action="/delete-testcase/{{ tc[0] }}"
+                      onsubmit="return confirm('Delete this test case permanently?');">
+                    <button type="submit" class="btn btn-outline-danger w-full">
+                        <i class="bi bi-trash3"></i> Delete Test Case
+                    </button>
+                </form>
+            </div>
+        </div>
 
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function adjustLayout() {
+        const grid = document.querySelector('[style*="grid-template-columns:1fr 300px"]');
+        if (!grid) return;
+        grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 300px';
+    }
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
+</script>
 {% endblock %}

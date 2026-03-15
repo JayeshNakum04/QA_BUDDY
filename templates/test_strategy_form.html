@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block breadcrumb %}Documentation / Test Strategy{% endblock %}
+
+{% block content %}
+
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ 'Edit' if edit_id else 'Create' }} Test Strategy</h1>
+        <p class="page-subtitle">Define testing levels, types, techniques, tools and metrics — exports as a PDF</p>
+    </div>
+    <a href="/documentation" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Docs
+    </a>
+</div>
+
+<!-- ── Form ──────────────────────────────────────────────────── -->
+<form method="post" action="/generate-test-strategy">
+    {% if edit_id %}
+        <input type="hidden" name="edit_id" value="{{ edit_id }}">
+    {% endif %}
+
+    <div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
+
+        <!-- Left Column — Form Fields -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <!-- Test Levels -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-layers" style="margin-right:7px; color:var(--blue);"></i>
+                        Test Levels
+                    </h6>
+                    <span class="badge badge-blue">Required</span>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">What levels of testing will be performed?</label>
+                    <textarea name="test_levels"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Unit Testing: Testing individual components in isolation&#10;Integration Testing: Testing interaction between modules&#10;System Testing: End-to-end testing of the complete system&#10;UAT: User Acceptance Testing with stakeholders"
+                              required>{{ data.test_levels if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> e.g. Unit, Integration, System, UAT
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Types -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-grid-3x3-gap" style="margin-right:7px; color:var(--blue);"></i>
+                        Test Types
+                    </h6>
+                    <span class="badge badge-blue">Required</span>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">What types of testing will be conducted?</label>
+                    <textarea name="test_types"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Functional Testing: Verify features work as per requirements&#10;Regression Testing: Ensure new changes don't break existing features&#10;Usability Testing: Validate ease of use and user experience&#10;Performance Testing: Check system behaviour under load"
+                              required>{{ data.test_types if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> e.g. Functional, Regression, Performance, Security
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Design Techniques -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-diagram-3" style="margin-right:7px; color:var(--amber);"></i>
+                        Test Design Techniques
+                    </h6>
+                    <span class="badge badge-amber">Required</span>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">Which techniques will be used to design test cases?</label>
+                    <textarea name="techniques"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Equivalence Partitioning: Divide inputs into valid/invalid partitions&#10;Boundary Value Analysis: Test edge values of input ranges&#10;Decision Table Testing: Cover all condition combinations&#10;Exploratory Testing: Ad-hoc testing based on experience"
+                              required>{{ data.techniques if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> e.g. EP, BVA, Decision Tables, Exploratory
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-tools" style="margin-right:7px; color:var(--zinc);"></i>
+                        Tools Used
+                    </h6>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">What tools will support the testing process?</label>
+                    <textarea name="tools"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Test Management: QA Buddy&#10;Bug Tracking: QA Buddy&#10;Browser Testing: Chrome DevTools, BrowserStack&#10;API Testing: Postman&#10;Performance: JMeter">{{ data.tools if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> Include test management, automation, and reporting tools
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-bar-chart-line" style="margin-right:7px; color:var(--green);"></i>
+                        Quality Metrics
+                    </h6>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">How will testing quality and progress be measured?</label>
+                    <textarea name="metrics"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Test Case Pass Rate: >= 95% required for release&#10;Defect Density: < 2 defects per module&#10;Test Coverage: 100% of critical features covered&#10;Defect Resolution Time: High priority bugs fixed within 24 hours">{{ data.metrics if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> Define measurable criteria for release readiness
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column — Preview & Submit -->
+        <div style="display:flex; flex-direction:column; gap:14px;">
+
+            <!-- PDF Preview -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6><i class="bi bi-file-earmark-pdf" style="margin-right:7px; color:var(--red);"></i>PDF Output</h6>
+                </div>
+                <div style="padding:16px 18px;">
+                    <div style="background:var(--surface-2); border:1px solid var(--border-light);
+                                border-radius:var(--radius); padding:16px; font-size:12px;
+                                font-family:'DM Mono',monospace; color:var(--text-muted); line-height:2;">
+                        <div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:8px;">
+                            Test Strategy
+                        </div>
+                        <div style="color:var(--amber);">── Test Levels</div>
+                        <div style="color:var(--amber);">── Test Types</div>
+                        <div style="color:var(--amber);">── Design Techniques</div>
+                        <div>── Tools Used</div>
+                        <div style="color:var(--green);">── Quality Metrics</div>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:10px; text-align:center;">
+                        <i class="bi bi-download"></i> File will download automatically
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="card">
+                <div style="padding:18px; display:flex; flex-direction:column; gap:10px;">
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        {{ 'Update & Export PDF' if edit_id else 'Generate PDF' }}
+                    </button>
+                    <a href="/documentation" class="btn btn-outline w-full" style="justify-content:center;">
+                        <i class="bi bi-x"></i> Cancel
+                    </a>
+                </div>
+            </div>
+
+            <!-- Technique Quick Reference -->
+            <div style="background:var(--surface-2); border:1px solid var(--border-light);
+                        border-radius:var(--radius-lg); padding:16px 18px;">
+                <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase;
+                            letter-spacing:.7px; color:var(--text-muted); margin-bottom:10px;">
+                    <i class="bi bi-lightbulb"></i> Quick Reference
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="font-size:12px; color:var(--text-secondary);">
+                        <span style="font-weight:600; color:var(--text-primary);">EP</span>
+                        — Equivalence Partitioning
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary);">
+                        <span style="font-weight:600; color:var(--text-primary);">BVA</span>
+                        — Boundary Value Analysis
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary);">
+                        <span style="font-weight:600; color:var(--text-primary);">DTT</span>
+                        — Decision Table Testing
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary);">
+                        <span style="font-weight:600; color:var(--text-primary);">STT</span>
+                        — State Transition Testing
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary);">
+                        <span style="font-weight:600; color:var(--text-primary);">ET</span>
+                        — Exploratory Testing
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function adjustLayout() {
+        const grid = document.querySelector('form > div');
+        if (!grid) return;
+        grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 300px';
+    }
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
+</script>
+{% endblock %}

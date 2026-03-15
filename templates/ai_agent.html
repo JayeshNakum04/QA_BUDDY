@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block breadcrumb %}AI QA Agent{% endblock %}
+{% set scanned = scanned | default(0) %}
+{% set bugs = bugs | default([]) %}
+
+{% block content %}
+
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">AI QA Agent</h1>
+        <p class="page-subtitle">Automatically crawl a website, detect errors and log bugs with screenshots</p>
+    </div>
+    <span class="badge badge-green" style="font-size:12px; padding:6px 12px;">
+        <i class="bi bi-circle-fill" style="font-size:7px;"></i> Automated
+    </span>
+</div>
+
+<!-- ── Main Grid ─────────────────────────────────────────────── -->
+<div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
+
+    <!-- Left — Scan Form -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- URL Input Card -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-globe" style="margin-right:7px; color:var(--blue);"></i>Target Website</h6>
+            </div>
+            <div style="padding:22px 24px;">
+
+                <form method="post" action="/ai-scan" id="scanForm" onsubmit="startScan()">
+
+                    <label class="form-label">Website URL to scan <span style="color:var(--red);">*</span></label>
+
+                    <div style="display:flex; gap:10px; align-items:stretch;">
+                        <div style="position:relative; flex:1;">
+                            <i class="bi bi-globe"
+                               style="position:absolute; left:12px; top:50%; transform:translateY(-50%);
+                                      color:var(--text-muted); font-size:14px; pointer-events:none;"></i>
+                            <input type="url"
+                                   name="url"
+                                   id="urlInput"
+                                   class="form-control"
+                                   style="padding-left:36px;"
+                                   placeholder="https://example.com"
+                                   required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="scanBtn">
+                            <i class="bi bi-play-fill"></i> Run Scan
+                        </button>
+                    </div>
+
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px;">
+                        <i class="bi bi-info-circle"></i>
+                        The agent will crawl up to <strong>10 pages</strong> on the same domain,
+                        detect HTTP errors and unreachable pages, then log bugs automatically.
+                    </div>
+
+                </form>
+
+                <!-- Scanning indicator (hidden by default) -->
+                <div id="scanningState" style="display:none; margin-top:20px;">
+                    <div style="display:flex; align-items:center; gap:12px; padding:14px 16px;
+                                background:var(--blue-bg); border:1px solid var(--blue-border);
+                                border-radius:var(--radius);">
+                        <div id="spinner"
+                             style="width:20px; height:20px; border:2px solid var(--blue-border);
+                                    border-top-color:var(--blue); border-radius:50%;
+                                    animation: spin .8s linear infinite; flex-shrink:0;"></div>
+                        <div>
+                            <div style="font-size:13px; font-weight:500; color:var(--blue);">
+                                Scanning in progress…
+                            </div>
+                            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+                                Crawling pages, detecting errors and capturing screenshots
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- How it Works -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-diagram-2" style="margin-right:7px; color:var(--zinc);"></i>How It Works</h6>
+            </div>
+            <div style="padding:20px 24px;">
+                <div style="display:flex; flex-direction:column; gap:0;">
+
+                    <!-- Step 1 -->
+                    <div style="display:flex; gap:14px; align-items:flex-start;">
+                        <div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0;">
+                            <div style="width:32px; height:32px; background:var(--blue-bg); border:1px solid var(--blue-border);
+                                        border-radius:50%; display:flex; align-items:center; justify-content:center;
+                                        font-size:12px; font-weight:600; color:var(--blue); font-family:'DM Mono',monospace;">1</div>
+                            <div style="width:1px; height:28px; background:var(--border-light);"></div>
+                        </div>
+                        <div style="padding-top:6px; padding-bottom:20px;">
+                            <div style="font-size:13.5px; font-weight:500; color:var(--text-primary); margin-bottom:3px;">
+                                <i class="bi bi-globe" style="margin-right:5px; color:var(--blue);"></i>Crawl Website
+                            </div>
+                            <div style="font-size:12.5px; color:var(--text-muted);">
+                                Visits up to 10 pages on the same domain, following internal links automatically.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div style="display:flex; gap:14px; align-items:flex-start;">
+                        <div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0;">
+                            <div style="width:32px; height:32px; background:var(--amber-bg); border:1px solid var(--amber-border);
+                                        border-radius:50%; display:flex; align-items:center; justify-content:center;
+                                        font-size:12px; font-weight:600; color:var(--amber); font-family:'DM Mono',monospace;">2</div>
+                            <div style="width:1px; height:28px; background:var(--border-light);"></div>
+                        </div>
+                        <div style="padding-top:6px; padding-bottom:20px;">
+                            <div style="font-size:13.5px; font-weight:500; color:var(--text-primary); margin-bottom:3px;">
+                                <i class="bi bi-search" style="margin-right:5px; color:var(--amber);"></i>Detect Errors
+                            </div>
+                            <div style="font-size:12.5px; color:var(--text-muted);">
+                                Flags HTTP 403, 404, 500 errors and pages that fail to load entirely.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div style="display:flex; gap:14px; align-items:flex-start;">
+                        <div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0;">
+                            <div style="width:32px; height:32px; background:var(--zinc-bg); border:1px solid var(--border);
+                                        border-radius:50%; display:flex; align-items:center; justify-content:center;
+                                        font-size:12px; font-weight:600; color:var(--zinc); font-family:'DM Mono',monospace;">3</div>
+                            <div style="width:1px; height:28px; background:var(--border-light);"></div>
+                        </div>
+                        <div style="padding-top:6px; padding-bottom:20px;">
+                            <div style="font-size:13.5px; font-weight:500; color:var(--text-primary); margin-bottom:3px;">
+                                <i class="bi bi-camera" style="margin-right:5px; color:var(--zinc);"></i>Capture Screenshots
+                            </div>
+                            <div style="font-size:12.5px; color:var(--text-muted);">
+                                Takes a full-page screenshot of each broken page using a headless browser.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div style="display:flex; gap:14px; align-items:flex-start;">
+                        <div style="flex-shrink:0;">
+                            <div style="width:32px; height:32px; background:var(--green-bg); border:1px solid var(--green-border);
+                                        border-radius:50%; display:flex; align-items:center; justify-content:center;
+                                        font-size:12px; font-weight:600; color:var(--green); font-family:'DM Mono',monospace;">4</div>
+                        </div>
+                        <div style="padding-top:6px;">
+                            <div style="font-size:13.5px; font-weight:500; color:var(--text-primary); margin-bottom:3px;">
+                                <i class="bi bi-bug-fill" style="margin-right:5px; color:var(--green);"></i>Log Bugs Automatically
+                            </div>
+                            <div style="font-size:12.5px; color:var(--text-muted);">
+                                Saves all detected issues directly to your Bug Tracker with steps, severity and screenshots.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Column — Info & Quick Links -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- What it detects -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-shield-exclamation" style="margin-right:7px; color:var(--red);"></i>Detects</h6>
+            </div>
+            <div style="padding:14px 18px; display:flex; flex-direction:column; gap:10px;">
+
+                <div style="display:flex; align-items:center; gap:10px; padding:9px 12px;
+                            background:var(--red-bg); border:1px solid var(--red-border); border-radius:var(--radius-sm);">
+                    <span class="badge badge-red" style="font-size:10.5px; flex-shrink:0;">500</span>
+                    <span style="font-size:12.5px; color:var(--text-secondary);">Internal Server Errors</span>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:10px; padding:9px 12px;
+                            background:var(--amber-bg); border:1px solid var(--amber-border); border-radius:var(--radius-sm);">
+                    <span class="badge badge-amber" style="font-size:10.5px; flex-shrink:0;">404</span>
+                    <span style="font-size:12.5px; color:var(--text-secondary);">Page Not Found</span>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:10px; padding:9px 12px;
+                            background:var(--amber-bg); border:1px solid var(--amber-border); border-radius:var(--radius-sm);">
+                    <span class="badge badge-amber" style="font-size:10.5px; flex-shrink:0;">403</span>
+                    <span style="font-size:12.5px; color:var(--text-secondary);">Access Forbidden</span>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:10px; padding:9px 12px;
+                            background:var(--zinc-bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
+                    <span class="badge badge-zinc" style="font-size:10.5px; flex-shrink:0;">ERR</span>
+                    <span style="font-size:12.5px; color:var(--text-secondary);">Unreachable Pages</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Quick links -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-link-45deg" style="margin-right:7px;"></i>Quick Links</h6>
+            </div>
+            <div style="padding:14px 18px; display:flex; flex-direction:column; gap:8px;">
+                <a href="/bugs" class="btn btn-outline btn-sm w-full" style="justify-content:flex-start;">
+                    <i class="bi bi-bug"></i> View Bug Tracker
+                </a>
+                <a href="/export-bugs" class="btn btn-outline btn-sm w-full" style="justify-content:flex-start;">
+                    <i class="bi bi-file-earmark-excel"></i> Export Bugs
+                </a>
+            </div>
+        </div>
+
+        <!-- Note -->
+        <div style="background:var(--amber-bg); border:1px solid var(--amber-border);
+                    border-radius:var(--radius-lg); padding:14px 16px;">
+            <div style="display:flex; gap:9px; align-items:flex-start;">
+                <i class="bi bi-exclamation-triangle-fill" style="color:var(--amber); margin-top:1px; flex-shrink:0;"></i>
+                <div style="font-size:12.5px; color:var(--text-secondary); line-height:1.6;">
+                    <strong style="color:var(--text-primary);">Note:</strong>
+                    Scans only detect HTTP-level errors. Manual testing is still required for
+                    functional, UI, and business logic issues.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+<script>
+    function startScan() {
+        const url = document.getElementById('urlInput').value.trim();
+        if (!url) return;
+
+        document.getElementById('scanBtn').disabled = true;
+        document.getElementById('scanBtn').innerHTML = '<i class="bi bi-hourglass-split"></i> Scanning…';
+        document.getElementById('scanningState').style.display = 'block';
+        document.getElementById('urlInput').disabled = true;
+    }
+
+    // Responsive layout
+    function adjustLayout() {
+        const grid = document.querySelector('[style*="grid-template-columns:1fr 300px"]');
+        if (!grid) return;
+        grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 300px';
+    }
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
+</script>
+{% endblock %}

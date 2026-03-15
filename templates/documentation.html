@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block breadcrumb %}Documentation{% endblock %}
+
+{% block content %}
+
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Documentation</h1>
+        <p class="page-subtitle">Generate professional QA documents and export them as PDFs</p>
+    </div>
+    <a href="/documentation/drafts" class="btn btn-outline btn-sm">
+        <i class="bi bi-folder2-open"></i> View Saved Drafts
+    </a>
+</div>
+
+<!-- ── Document Cards ────────────────────────────────────────── -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
+
+    <!-- Test Plan -->
+    <a href="/doc/test-plan" style="text-decoration:none;">
+        <div class="card doc-card" style="height:100%; transition: box-shadow var(--transition), transform var(--transition);">
+            <div style="padding:24px 24px 20px;">
+
+                <div style="width:44px; height:44px; background:var(--blue-bg); border:1px solid var(--blue-border);
+                            border-radius:var(--radius); display:flex; align-items:center; justify-content:center;
+                            margin-bottom:16px;">
+                    <i class="bi bi-file-earmark-text-fill" style="font-size:20px; color:var(--blue);"></i>
+                </div>
+
+                <h5 style="font-size:15px; font-weight:600; margin:0 0 8px; color:var(--text-primary);">
+                    Test Plan
+                </h5>
+                <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px; line-height:1.6;">
+                    Define the testing objective, scope, environment setup, and risk assessment for your project.
+                </p>
+
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px;">
+                    <span class="badge badge-blue">Objective</span>
+                    <span class="badge badge-blue">Scope</span>
+                    <span class="badge badge-blue">Environment</span>
+                    <span class="badge badge-blue">Risks</span>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-size:12px; color:var(--text-muted);">
+                        <i class="bi bi-file-earmark-pdf" style="margin-right:4px;"></i> Exports as PDF
+                    </span>
+                    <span style="font-size:13px; color:var(--blue); font-weight:500;">
+                        Create <i class="bi bi-arrow-right"></i>
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </a>
+
+    <!-- Test Strategy -->
+    <a href="/doc/test-strategy" style="text-decoration:none;">
+        <div class="card doc-card" style="height:100%; transition: box-shadow var(--transition), transform var(--transition);">
+            <div style="padding:24px 24px 20px;">
+
+                <div style="width:44px; height:44px; background:var(--amber-bg); border:1px solid var(--amber-border);
+                            border-radius:var(--radius); display:flex; align-items:center; justify-content:center;
+                            margin-bottom:16px;">
+                    <i class="bi bi-diagram-3-fill" style="font-size:20px; color:var(--amber);"></i>
+                </div>
+
+                <h5 style="font-size:15px; font-weight:600; margin:0 0 8px; color:var(--text-primary);">
+                    Test Strategy
+                </h5>
+                <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px; line-height:1.6;">
+                    Outline the testing levels, types, design techniques, tools, and quality metrics for your team.
+                </p>
+
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px;">
+                    <span class="badge badge-amber">Test Levels</span>
+                    <span class="badge badge-amber">Test Types</span>
+                    <span class="badge badge-amber">Techniques</span>
+                    <span class="badge badge-amber">Tools</span>
+                    <span class="badge badge-amber">Metrics</span>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-size:12px; color:var(--text-muted);">
+                        <i class="bi bi-file-earmark-pdf" style="margin-right:4px;"></i> Exports as PDF
+                    </span>
+                    <span style="font-size:13px; color:var(--amber); font-weight:500;">
+                        Create <i class="bi bi-arrow-right"></i>
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </a>
+
+    <!-- Test Summary Report -->
+    <a href="/doc/test-summary" style="text-decoration:none;">
+        <div class="card doc-card" style="height:100%; transition: box-shadow var(--transition), transform var(--transition);">
+            <div style="padding:24px 24px 20px;">
+
+                <div style="width:44px; height:44px; background:var(--green-bg); border:1px solid var(--green-border);
+                            border-radius:var(--radius); display:flex; align-items:center; justify-content:center;
+                            margin-bottom:16px;">
+                    <i class="bi bi-clipboard2-data-fill" style="font-size:20px; color:var(--green);"></i>
+                </div>
+
+                <h5 style="font-size:15px; font-weight:600; margin:0 0 8px; color:var(--text-primary);">
+                    Test Summary Report
+                </h5>
+                <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px; line-height:1.6;">
+                    Summarise test execution results, defect counts by severity, and final recommendations.
+                </p>
+
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px;">
+                    <span class="badge badge-green">Execution Stats</span>
+                    <span class="badge badge-green">Defect Summary</span>
+                    <span class="badge badge-green">Conclusion</span>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-size:12px; color:var(--text-muted);">
+                        <i class="bi bi-file-earmark-pdf" style="margin-right:4px;"></i> Exports as PDF
+                    </span>
+                    <span style="font-size:13px; color:var(--green); font-weight:500;">
+                        Create <i class="bi bi-arrow-right"></i>
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </a>
+
+</div>
+
+<!-- ── Drafts Banner ─────────────────────────────────────────── -->
+<div class="card" style="margin-top:16px;">
+    <div style="padding:18px 22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:38px; height:38px; background:var(--zinc-bg); border:1px solid var(--border);
+                        border-radius:var(--radius); display:flex; align-items:center; justify-content:center;">
+                <i class="bi bi-folder2-open" style="font-size:17px; color:var(--zinc);"></i>
+            </div>
+            <div>
+                <div style="font-size:13.5px; font-weight:500; color:var(--text-primary);">Saved Drafts</div>
+                <div style="font-size:12.5px; color:var(--text-muted);">
+                    All previously generated documents are auto-saved and can be edited and re-exported anytime.
+                </div>
+            </div>
+        </div>
+        <a href="/documentation/drafts" class="btn btn-outline btn-sm">
+            <i class="bi bi-arrow-right"></i> View All Drafts
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .doc-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

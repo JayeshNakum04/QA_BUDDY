@@ -1,33 +1,166 @@
 {% extends "base.html" %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
 {% block content %}
 
-<div class="text-center">
-    <h1 class="mb-3">QA Buddy</h1>
-    <p class="lead">Manual QA Bug & Test Case Management Tool</p>
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Overview of your current testing progress</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        <a href="/add-bug" class="btn btn-outline">
+            <i class="bi bi-plus"></i> Add Bug
+        </a>
+        <a href="/add-testcase" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Add Test Case
+        </a>
+    </div>
 </div>
 
-<div class="row mt-4">
+<!-- ── Stat Cards ────────────────────────────────────────────── -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px;">
 
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">🐞 Bug Management</h5>
-                <a href="/add-bug" class="btn btn-primary me-2">➕ Add Bug</a>
-                <a href="/bugs" class="btn btn-outline-primary">📋 View Bugs</a>
+    <div class="stat-card">
+        <div class="stat-icon red">
+            <i class="bi bi-bug-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ bug_count }}</div>
+            <div class="stat-label">Total Bugs</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon amber">
+            <i class="bi bi-exclamation-circle-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ open_bugs }}</div>
+            <div class="stat-label">Open Bugs</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-clipboard2-check-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ tc_count }}</div>
+            <div class="stat-label">Test Cases</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ passed_tc }}</div>
+            <div class="stat-label">Tests Passed</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Quick Actions ─────────────────────────────────────────── -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+
+    <!-- Bug Management -->
+    <div class="card">
+        <div class="card-header-bar">
+            <h6><i class="bi bi-bug" style="margin-right:7px; color:var(--red);"></i>Bug Management</h6>
+        </div>
+        <div style="padding: 20px;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                Log, track, and manage defects found during testing. Attach screenshots and set severity levels.
+            </p>
+            <div class="flex gap-2 flex-wrap">
+                <a href="/add-bug" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus"></i> Add Bug
+                </a>
+                <a href="/bugs" class="btn btn-outline btn-sm">
+                    <i class="bi bi-list-ul"></i> View All
+                </a>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">🧪 Test Case Management</h5>
-                <a href="/add-testcase" class="btn btn-success me-2">➕ Add Test Case</a>
-                <a href="/testcases" class="btn btn-outline-success">📋 View Test Cases</a>
+    <!-- Test Case Management -->
+    <div class="card">
+        <div class="card-header-bar">
+            <h6><i class="bi bi-clipboard2-check" style="margin-right:7px; color:var(--blue);"></i>Test Case Management</h6>
+        </div>
+        <div style="padding: 20px;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                Write and execute test cases by module. Track pass/fail status and apply test design techniques.
+            </p>
+            <div class="flex gap-2 flex-wrap">
+                <a href="/add-testcase" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus"></i> Add Test Case
+                </a>
+                <a href="/testcases" class="btn btn-outline btn-sm">
+                    <i class="bi bi-list-ul"></i> View All
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- Documentation -->
+    <div class="card">
+        <div class="card-header-bar">
+            <h6><i class="bi bi-file-earmark-text" style="margin-right:7px; color:var(--zinc);"></i>Documentation</h6>
+        </div>
+        <div style="padding: 20px;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                Generate professional QA documents — Test Plan, Test Strategy, and Test Summary Reports as PDFs.
+            </p>
+            <div class="flex gap-2 flex-wrap">
+                <a href="/documentation" class="btn btn-outline btn-sm">
+                    <i class="bi bi-arrow-right"></i> Open Docs
+                </a>
+                <a href="/documentation/drafts" class="btn btn-outline btn-sm">
+                    <i class="bi bi-folder2-open"></i> Drafts
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI QA Agent -->
+    <div class="card" style="border: 1px solid var(--border); background: var(--surface);">
+        <div class="card-header-bar">
+            <h6><i class="bi bi-robot" style="margin-right:7px; color:var(--green);"></i>AI QA Agent</h6>
+            <span class="badge badge-green">Auto</span>
+        </div>
+        <div style="padding: 20px;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                Automatically crawl a website, detect HTTP errors and broken pages, capture screenshots and log bugs.
+            </p>
+            <div class="flex gap-2 flex-wrap">
+                <a href="/ai-agent" class="btn btn-primary btn-sm">
+                    <i class="bi bi-play-fill"></i> Run Scan
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Export Row ─────────────────────────────────────────────── -->
+<div class="card" style="margin-top: 16px;">
+    <div class="card-header-bar">
+        <h6><i class="bi bi-download" style="margin-right:7px;"></i>Export Data</h6>
+    </div>
+    <div style="padding: 16px 20px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <span style="font-size:13px; color:var(--text-muted); margin-right:4px;">Download your data as Excel reports:</span>
+        <a href="/export-bugs" class="btn btn-outline btn-sm">
+            <i class="bi bi-file-earmark-excel"></i> Export Bugs
+        </a>
+        <a href="/export-testcases" class="btn btn-outline btn-sm">
+            <i class="bi bi-file-earmark-excel"></i> Export Test Cases
+        </a>
+    </div>
 </div>
 
 {% endblock %}

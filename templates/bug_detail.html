@@ -1,89 +1,235 @@
 {% extends "base.html" %}
+{% block breadcrumb %}Bugs / Detail{% endblock %}
+
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">🐞 Bug Detail</h4>
-    <a href="/bugs" class="btn btn-outline-secondary btn-sm">
-        ← Back to Bugs
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Bug Detail</h1>
+        <p class="page-subtitle">Full information and status management</p>
+    </div>
+    <a href="/bugs" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Bugs
     </a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
+<!-- ── Main Grid ─────────────────────────────────────────────── -->
+<div style="display:grid; grid-template-columns: 1fr 300px; gap:16px; align-items:start;">
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <small class="text-muted">Title</small>
-                <div class="fw-semibold">{{ bug[1] }}</div>
-            </div>
+    <!-- Left Column — Bug Info -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
 
-            <div class="col-md-6 text-md-end">
-                <small class="text-muted">Status</small><br>
-                <span class="badge 
-                    {% if bug[6]=='Open' %} bg-secondary
-                    {% elif bug[6]=='Fixed' %} bg-warning text-dark
-                    {% else %} bg-success {% endif %}">
-                    {{ bug[6] }}
-                </span>
+        <!-- Title Card -->
+        <div class="card">
+            <div style="padding: 20px 22px;">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:11px; font-family:'DM Mono',monospace; letter-spacing:.7px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">
+                            Bug #{{ bug[0] }}
+                        </div>
+                        <h2 style="font-size:17px; font-weight:600; margin:0; color:var(--text-primary);">
+                            {{ bug[1] }}
+                        </h2>
+                    </div>
+
+                    <!-- Status badge -->
+                    <div>
+                        {% if bug[6] == 'Open' %}
+                            <span class="badge badge-amber" style="font-size:12px; padding:5px 12px;">
+                                <i class="bi bi-circle-fill" style="font-size:7px;"></i> Open
+                            </span>
+                        {% elif bug[6] == 'Fixed' %}
+                            <span class="badge badge-blue" style="font-size:12px; padding:5px 12px;">
+                                <i class="bi bi-wrench-adjustable" style="font-size:10px;"></i> Fixed
+                            </span>
+                        {% else %}
+                            <span class="badge badge-green" style="font-size:12px; padding:5px 12px;">
+                                <i class="bi bi-check-circle-fill" style="font-size:10px;"></i> Closed
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Severity + Priority pills -->
+                <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--border-light); border-radius:var(--radius-sm); padding:5px 12px;">
+                        <span style="font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.5px;">Severity</span>
+                        <span style="font-size:13px; font-weight:500;">
+                            {% if bug[5] == 'Critical' %}
+                                <span style="color:var(--red);">● Critical</span>
+                            {% elif bug[5] == 'Major' %}
+                                <span style="color:var(--amber);">● Major</span>
+                            {% else %}
+                                <span style="color:var(--zinc);">● Minor</span>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--border-light); border-radius:var(--radius-sm); padding:5px 12px;">
+                        <span style="font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.5px;">Priority</span>
+                        <span style="font-size:13px; font-weight:500;">
+                            {% if bug[8] == 'High' %}
+                                <span style="color:var(--red);">High</span>
+                            {% elif bug[8] == 'Medium' %}
+                                <span style="color:var(--amber);">Medium</span>
+                            {% else %}
+                                <span style="color:var(--zinc);">Low</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <hr>
-
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <small class="text-muted">Severity</small><br>
-                <span class="badge bg-danger">{{ bug[5] }}</span>
+        <!-- Steps to Reproduce -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-list-ol" style="margin-right:7px; color:var(--zinc);"></i>Steps to Reproduce</h6>
             </div>
-
-            <div class="col-md-4">
-                <small class="text-muted">Priority</small><br>
-                <span class="badge bg-warning text-dark">{{ bug[8] }}</span>
+            <div style="padding:18px 22px;">
+                <pre style="font-family:'DM Sans',sans-serif; font-size:13.5px; color:var(--text-primary); white-space:pre-wrap; margin:0; line-height:1.7;">{{ bug[2] }}</pre>
             </div>
         </div>
 
-        <div class="mb-3">
-            <small class="text-muted">Steps to Reproduce</small>
-            <div class="border rounded p-2 bg-light">
-                {{ bug[2] }}
+        <!-- Expected vs Actual -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6><i class="bi bi-check2-circle" style="margin-right:7px; color:var(--green);"></i>Expected Result</h6>
+                </div>
+                <div style="padding:16px 20px;">
+                    <p style="font-size:13.5px; color:var(--text-primary); margin:0; line-height:1.7; white-space:pre-wrap;">{{ bug[3] }}</p>
+                </div>
             </div>
+
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6><i class="bi bi-x-circle" style="margin-right:7px; color:var(--red);"></i>Actual Result</h6>
+                </div>
+                <div style="padding:16px 20px;">
+                    <p style="font-size:13.5px; color:var(--text-primary); margin:0; line-height:1.7; white-space:pre-wrap;">{{ bug[4] }}</p>
+                </div>
+            </div>
+
         </div>
 
-        <div class="mb-3">
-            <small class="text-muted">Expected Result</small>
-            <div class="border rounded p-2 bg-light">
-                {{ bug[3] }}
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <small class="text-muted">Actual Result</small>
-            <div class="border rounded p-2 bg-light">
-                {{ bug[4] }}
-            </div>
-        </div>
-
+        <!-- Screenshot -->
         {% if bug[7] %}
-        <div class="mb-3">
-            <small class="text-muted">Screenshot</small><br>
-            <img src="{{ url_for('static', filename='uploads/' + bug[7]) }}"
-                 class="img-fluid border rounded mt-1">
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-image" style="margin-right:7px; color:var(--zinc);"></i>Screenshot</h6>
+                <a href="{{ url_for('static', filename='uploads/' + bug[7]) }}"
+                   target="_blank" class="btn btn-outline btn-sm">
+                    <i class="bi bi-box-arrow-up-right"></i> Open Full
+                </a>
+            </div>
+            <div style="padding:16px 20px;">
+                <img src="{{ url_for('static', filename='uploads/' + bug[7]) }}"
+                     alt="Bug screenshot"
+                     style="width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block;">
+            </div>
         </div>
         {% endif %}
 
-        <hr>
+    </div>
 
-        <form method="post" action="/update-status/{{ bug[0] }}" class="d-flex align-items-center gap-2">
-            <label class="mb-0">Update Status</label>
-            <select name="status" class="form-select form-select-sm w-auto">
-                <option {% if bug[6]=='Open' %}selected{% endif %}>Open</option>
-                <option {% if bug[6]=='Fixed' %}selected{% endif %}>Fixed</option>
-                <option {% if bug[6]=='Closed' %}selected{% endif %}>Closed</option>
-            </select>
-            <button class="btn btn-primary btn-sm">Save</button>
-        </form>
+    <!-- Right Column — Actions -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Update Status -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-arrow-repeat" style="margin-right:7px;"></i>Update Status</h6>
+            </div>
+            <div style="padding:16px 18px;">
+                <form method="post" action="/update-status/{{ bug[0] }}">
+                    <label class="form-label">Set new status</label>
+                    <select name="status" class="form-select mb-3">
+                        <option {% if bug[6]=='Open' %}selected{% endif %}>Open</option>
+                        <option {% if bug[6]=='Fixed' %}selected{% endif %}>Fixed</option>
+                        <option {% if bug[6]=='Closed' %}selected{% endif %}>Closed</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="bi bi-check2"></i> Save Status
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bug Meta -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-info-circle" style="margin-right:7px;"></i>Meta</h6>
+            </div>
+            <div style="padding:14px 18px; display:flex; flex-direction:column; gap:12px;">
+
+                <div>
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:3px;">Bug ID</div>
+                    <div style="font-size:13.5px; font-weight:500;">#{{ bug[0] }}</div>
+                </div>
+
+                <hr class="divider" style="margin:0;">
+
+                <div>
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:3px;">Severity</div>
+                    <div style="font-size:13.5px;">{{ bug[5] }}</div>
+                </div>
+
+                <hr class="divider" style="margin:0;">
+
+                <div>
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:3px;">Priority</div>
+                    <div style="font-size:13.5px;">{{ bug[8] }}</div>
+                </div>
+
+                <hr class="divider" style="margin:0;">
+
+                <div>
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:3px;">Screenshot</div>
+                    <div style="font-size:13.5px;">{{ bug[7] if bug[7] else '—' }}</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card" style="border-color: var(--red-border);">
+            <div class="card-header-bar" style="border-color: var(--red-border);">
+                <h6 style="color:var(--red);"><i class="bi bi-exclamation-triangle" style="margin-right:7px;"></i>Danger Zone</h6>
+            </div>
+            <div style="padding:14px 18px;">
+                <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">
+                    Permanently delete this bug. This action cannot be undone.
+                </p>
+                <form method="post" action="/delete-bug/{{ bug[0] }}"
+                      onsubmit="return confirm('Delete this bug permanently?');">
+                    <button type="submit" class="btn btn-outline-danger w-full">
+                        <i class="bi bi-trash3"></i> Delete Bug
+                    </button>
+                </form>
+            </div>
+        </div>
 
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Responsive: stack columns on small screens
+    function adjustLayout() {
+        const grid = document.querySelector('[style*="grid-template-columns: 1fr 300px"]');
+        if (!grid) return;
+        if (window.innerWidth < 900) {
+            grid.style.gridTemplateColumns = '1fr';
+        } else {
+            grid.style.gridTemplateColumns = '1fr 300px';
+        }
+    }
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
+</script>
 {% endblock %}

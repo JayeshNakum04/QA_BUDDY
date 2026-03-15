@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% block breadcrumb %}Documentation / Test Summary{% endblock %}
+
+{% block content %}
+
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ 'Edit' if edit_id else 'Create' }} Test Summary Report</h1>
+        <p class="page-subtitle">Summarise test execution results, defects and recommendations — exports as a PDF</p>
+    </div>
+    <a href="/documentation" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Docs
+    </a>
+</div>
+
+<!-- ── Form ──────────────────────────────────────────────────── -->
+<form method="post" action="/generate-test-summary">
+    {% if edit_id %}
+        <input type="hidden" name="edit_id" value="{{ edit_id }}">
+    {% endif %}
+
+    <div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
+
+        <!-- Left Column -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <!-- Execution Summary -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-clipboard2-data" style="margin-right:7px; color:var(--green);"></i>
+                        Execution Summary
+                    </h6>
+                    <span class="badge badge-green">Required</span>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">Provide an overall summary of the testing cycle</label>
+                    <textarea name="execution_summary"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Testing was completed for Sprint 4 covering the Login, Registration and Dashboard modules. All critical and high priority test cases were executed. The overall quality is acceptable for release with minor issues noted."
+                              required>{{ data.execution_summary if data else '' }}</textarea>
+                </div>
+            </div>
+
+            <!-- Test Execution Stats -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-bar-chart" style="margin-right:7px; color:var(--green);"></i>
+                        Test Execution Results
+                    </h6>
+                </div>
+                <div style="padding:20px 22px;">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:12px;">
+
+                        <div>
+                            <label class="form-label">Total Test Cases</label>
+                            <input type="number" name="total_tc" min="0"
+                                   class="form-control"
+                                   placeholder="0"
+                                   value="{{ data.total_tc if data else '' }}"
+                                   oninput="updateProgress()">
+                        </div>
+
+                        <div>
+                            <label class="form-label">
+                                <span style="display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; margin-right:4px;"></span>
+                                Passed
+                            </label>
+                            <input type="number" name="passed" min="0"
+                                   class="form-control"
+                                   placeholder="0"
+                                   value="{{ data.passed if data else '' }}"
+                                   oninput="updateProgress()">
+                        </div>
+
+                        <div>
+                            <label class="form-label">
+                                <span style="display:inline-block; width:8px; height:8px; background:var(--red); border-radius:50%; margin-right:4px;"></span>
+                                Failed
+                            </label>
+                            <input type="number" name="failed" min="0"
+                                   class="form-control"
+                                   placeholder="0"
+                                   value="{{ data.failed if data else '' }}"
+                                   oninput="updateProgress()">
+                        </div>
+
+                        <div>
+                            <label class="form-label">
+                                <span style="display:inline-block; width:8px; height:8px; background:var(--amber); border-radius:50%; margin-right:4px;"></span>
+                                Blocked
+                            </label>
+                            <input type="number" name="blocked" min="0"
+                                   class="form-control"
+                                   placeholder="0"
+                                   value="{{ data.blocked if data else '' }}"
+                                   oninput="updateProgress()">
+                        </div>
+
+                    </div>
+
+                    <!-- Live progress bar -->
+                    <div style="margin-top:16px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                            <span style="font-size:12px; color:var(--text-muted);">Pass rate</span>
+                            <span id="passRateLabel" style="font-size:12px; font-family:'DM Mono',monospace; font-weight:600; color:var(--green);">—</span>
+                        </div>
+                        <div style="height:7px; background:var(--border); border-radius:99px; overflow:hidden;">
+                            <div id="passBar"
+                                 style="height:100%; width:0%; background:var(--green);
+                                        border-radius:99px; transition: width .4s ease;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Defect Summary -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-bug" style="margin-right:7px; color:var(--red);"></i>
+                        Defect Summary by Severity
+                    </h6>
+                </div>
+                <div style="padding:20px 22px;">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:12px;">
+
+                        <div>
+                            <label class="form-label">
+                                <span class="badge badge-red" style="font-size:10px; margin-right:4px;">Critical</span>
+                            </label>
+                            <input type="number" name="critical" min="0"
+                                   class="form-control"
+                                   placeholder="0"
+                                   value="{{ data.critical if data else '' }}">
+                        </div>
+
+                        <div>
+                            <label class="form-label">
+                                <span class="badge badge-red" style="font-size:10px; margin-right:4px;">High</span>
+                            </label>
+                            <input type="number" name="high" min="0"
+                                   class="form-control"
+                                   placeholder="0"
+                                   value="{{ data.high if data else '' }}">
+                        </div>
+
+                        <div>
+                            <label class="form-label">
+                                <span class="badge badge-amber" style="font-size:10px; margin-right:4px;">Medium</span>
+                            </label>
+                            <input type="number" name="medium" min="0"
+                                   class="form-control"
+                                   placeholder="0"
+                                   value="{{ data.medium if data else '' }}">
+                        </div>
+
+                        <div>
+                            <label class="form-label">
+                                <span class="badge badge-zinc" style="font-size:10px; margin-right:4px;">Low</span>
+                            </label>
+                            <input type="number" name="low" min="0"
+                                   class="form-control"
+                                   placeholder="0"
+                                   value="{{ data.low if data else '' }}">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conclusion -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-check2-all" style="margin-right:7px; color:var(--blue);"></i>
+                        Conclusion &amp; Recommendations
+                    </h6>
+                    <span class="badge badge-blue">Required</span>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">What is the final recommendation?</label>
+                    <textarea name="recommendation"
+                              class="form-control"
+                              rows="4"
+                              placeholder="The application is ready for release. All critical and high severity defects have been resolved. Two medium priority issues have been deferred to the next sprint with stakeholder approval. Recommend proceeding with production deployment."
+                              required>{{ data.recommendation if data else '' }}</textarea>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column -->
+        <div style="display:flex; flex-direction:column; gap:14px;">
+
+            <!-- Live Summary Card -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6><i class="bi bi-activity" style="margin-right:7px; color:var(--green);"></i>Live Preview</h6>
+                </div>
+                <div style="padding:16px 18px; display:flex; flex-direction:column; gap:10px;">
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px;
+                                background:var(--green-bg); border:1px solid var(--green-border); border-radius:var(--radius-sm);">
+                        <span style="font-size:12px; color:var(--green);">Passed</span>
+                        <span id="livePass" style="font-size:15px; font-weight:600; font-family:'DM Mono',monospace; color:var(--green);">0</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px;
+                                background:var(--red-bg); border:1px solid var(--red-border); border-radius:var(--radius-sm);">
+                        <span style="font-size:12px; color:var(--red);">Failed</span>
+                        <span id="liveFail" style="font-size:15px; font-weight:600; font-family:'DM Mono',monospace; color:var(--red);">0</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px;
+                                background:var(--amber-bg); border:1px solid var(--amber-border); border-radius:var(--radius-sm);">
+                        <span style="font-size:12px; color:var(--amber);">Blocked</span>
+                        <span id="liveBlock" style="font-size:15px; font-weight:600; font-family:'DM Mono',monospace; color:var(--amber);">0</span>
+                    </div>
+
+                    <hr class="divider" style="margin:4px 0;">
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:var(--text-muted);">Total</span>
+                        <span id="liveTotal" style="font-size:15px; font-weight:600; font-family:'DM Mono',monospace;">0</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PDF Preview -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6><i class="bi bi-file-earmark-pdf" style="margin-right:7px; color:var(--red);"></i>PDF Output</h6>
+                </div>
+                <div style="padding:16px 18px;">
+                    <div style="background:var(--surface-2); border:1px solid var(--border-light);
+                                border-radius:var(--radius); padding:16px; font-size:12px;
+                                font-family:'DM Mono',monospace; color:var(--text-muted); line-height:2;">
+                        <div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:8px;">
+                            Test Summary Report
+                        </div>
+                        <div style="color:var(--green);">── Execution Summary</div>
+                        <div style="color:var(--green);">── Execution Results Table</div>
+                        <div style="color:var(--red);">── Defect Summary Table</div>
+                        <div style="color:var(--blue);">── Conclusion</div>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:10px; text-align:center;">
+                        <i class="bi bi-download"></i> File will download automatically
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="card">
+                <div style="padding:18px; display:flex; flex-direction:column; gap:10px;">
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        {{ 'Update & Export PDF' if edit_id else 'Generate PDF' }}
+                    </button>
+                    <a href="/documentation" class="btn btn-outline w-full" style="justify-content:center;">
+                        <i class="bi bi-x"></i> Cancel
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ── Live stats update ─────────────────────────────────────
+    function updateProgress() {
+        const total   = parseInt(document.querySelector('[name=total_tc]').value)  || 0;
+        const passed  = parseInt(document.querySelector('[name=passed]').value)    || 0;
+        const failed  = parseInt(document.querySelector('[name=failed]').value)    || 0;
+        const blocked = parseInt(document.querySelector('[name=blocked]').value)   || 0;
+
+        document.getElementById('liveTotal').textContent = total;
+        document.getElementById('livePass').textContent  = passed;
+        document.getElementById('liveFail').textContent  = failed;
+        document.getElementById('liveBlock').textContent = blocked;
+
+        const rate = total > 0 ? Math.round((passed / total) * 100) : 0;
+        document.getElementById('passBar').style.width      = rate + '%';
+        document.getElementById('passRateLabel').textContent = total > 0 ? rate + '%' : '—';
+
+        // Change bar colour based on rate
+        const bar = document.getElementById('passBar');
+        if (rate >= 90)      bar.style.background = 'var(--green)';
+        else if (rate >= 70) bar.style.background = 'var(--amber)';
+        else                 bar.style.background = 'var(--red)';
+    }
+
+    // Run once on page load to populate from existing data
+    updateProgress();
+
+    // ── Responsive layout ─────────────────────────────────────
+    function adjustLayout() {
+        const grid = document.querySelector('form > div');
+        if (!grid) return;
+        grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 300px';
+    }
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
+</script>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block breadcrumb %}Documentation / Test Plan{% endblock %}
+
+{% block content %}
+
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ 'Edit' if edit_id else 'Create' }} Test Plan</h1>
+        <p class="page-subtitle">Define testing objectives, scope, environment and risks — exports as a PDF</p>
+    </div>
+    <a href="/documentation" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Docs
+    </a>
+</div>
+
+<!-- ── Form ──────────────────────────────────────────────────── -->
+<form method="post" action="/generate-test-plan">
+    {% if edit_id %}
+        <input type="hidden" name="edit_id" value="{{ edit_id }}">
+    {% endif %}
+
+    <div style="display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;">
+
+        <!-- Left Column — Form Fields -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <!-- Objective -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-bullseye" style="margin-right:7px; color:var(--blue);"></i>
+                        Objective
+                    </h6>
+                    <span class="badge badge-blue">Required</span>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">What is the goal of this testing effort?</label>
+                    <textarea name="objective"
+                              class="form-control"
+                              rows="4"
+                              placeholder="e.g. The objective of this test plan is to verify that all core features of the application work as expected before the production release..."
+                              required>{{ data.objective if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> Describe the purpose and goals of the testing cycle
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scope -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-bounding-box" style="margin-right:7px; color:var(--blue);"></i>
+                        Scope
+                    </h6>
+                    <span class="badge badge-blue">Required</span>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">What is included and excluded from testing?</label>
+                    <textarea name="scope"
+                              class="form-control"
+                              rows="4"
+                              placeholder="In Scope: Login module, Registration, Dashboard, Profile settings&#10;Out of Scope: Payment gateway integration, Third-party APIs, Admin panel"
+                              required>{{ data.scope if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> List features/modules that are in scope and out of scope
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Environment -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-pc-display" style="margin-right:7px; color:var(--blue);"></i>
+                        Test Environment
+                    </h6>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">What environment will testing be performed in?</label>
+                    <textarea name="environment"
+                              class="form-control"
+                              rows="4"
+                              placeholder="OS: Windows 11, macOS 14&#10;Browser: Chrome 120, Firefox 121&#10;Device: Desktop, Mobile (Android 13, iOS 17)&#10;Server: Staging environment at staging.example.com">{{ data.environment if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> Include OS, browsers, devices, and server details
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risks -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6>
+                        <i class="bi bi-exclamation-triangle" style="margin-right:7px; color:var(--amber);"></i>
+                        Risks & Mitigations
+                    </h6>
+                </div>
+                <div style="padding:20px 22px;">
+                    <label class="form-label">What risks could affect the testing effort?</label>
+                    <textarea name="risks"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Risk 1: Incomplete requirements — Mitigation: Early sign-off with stakeholders&#10;Risk 2: Limited testing time — Mitigation: Prioritise critical test cases&#10;Risk 3: Environment instability — Mitigation: Use dedicated staging server">{{ data.risks if data else '' }}</textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-info-circle"></i> Identify risks and how you plan to mitigate them
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column — Preview & Submit -->
+        <div style="display:flex; flex-direction:column; gap:14px;">
+
+            <!-- PDF Preview card -->
+            <div class="card">
+                <div class="card-header-bar">
+                    <h6><i class="bi bi-file-earmark-pdf" style="margin-right:7px; color:var(--red);"></i>PDF Output</h6>
+                </div>
+                <div style="padding:16px 18px;">
+
+                    <!-- Mock PDF preview -->
+                    <div style="background:var(--surface-2); border:1px solid var(--border-light);
+                                border-radius:var(--radius); padding:16px; font-size:12px;
+                                font-family:'DM Mono',monospace; color:var(--text-muted); line-height:2;">
+                        <div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:8px;">
+                            Test Plan
+                        </div>
+                        <div>── Objective</div>
+                        <div>── Scope</div>
+                        <div>── Test Environment</div>
+                        <div>── Risks & Mitigations</div>
+                    </div>
+
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:10px; text-align:center;">
+                        <i class="bi bi-download"></i> File will download automatically
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="card">
+                <div style="padding:18px; display:flex; flex-direction:column; gap:10px;">
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        {{ 'Update & Export PDF' if edit_id else 'Generate PDF' }}
+                    </button>
+                    <a href="/documentation" class="btn btn-outline w-full" style="justify-content:center;">
+                        <i class="bi bi-x"></i> Cancel
+                    </a>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div style="background:var(--surface-2); border:1px solid var(--border-light);
+                        border-radius:var(--radius-lg); padding:16px 18px;">
+                <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase;
+                            letter-spacing:.7px; color:var(--text-muted); margin-bottom:10px;">
+                    <i class="bi bi-lightbulb"></i> How it works
+                </div>
+                <ul style="font-size:12.5px; color:var(--text-muted); padding-left:16px; margin:0; line-height:1.9;">
+                    <li>Fill in all fields above</li>
+                    <li>Click Generate PDF</li>
+                    <li>PDF downloads automatically</li>
+                    <li>Draft is saved for future edits</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function adjustLayout() {
+        const grid = document.querySelector('form > div');
+        if (!grid) return;
+        grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 300px';
+    }
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
+</script>
+{% endblock %}

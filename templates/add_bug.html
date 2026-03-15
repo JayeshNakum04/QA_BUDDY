@@ -1,91 +1,294 @@
 {% extends "base.html" %}
+{% block breadcrumb %}Bugs / Add New{% endblock %}
+
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">🐞 Add New Bug</h4>
-    <a href="/bugs" class="btn btn-outline-secondary btn-sm">
-        ← Back to Bugs
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Add New Bug</h1>
+        <p class="page-subtitle">Fill in the details of the defect you found</p>
+    </div>
+    <a href="/bugs" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Bugs
     </a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
+<!-- ── Form ──────────────────────────────────────────────────── -->
+<form method="post" enctype="multipart/form-data">
+<div style="display:grid; grid-template-columns: 1fr 320px; gap:16px; align-items:start;">
 
-        <form method="post" enctype="multipart/form-data">
+    <!-- Left Column — Main Fields -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
 
-            <div class="mb-3">
-                <label class="form-label">Bug Title</label>
-                <input type="text"
-                       name="title"
-                       class="form-control"
-                       placeholder="Login button not working"
-                       required>
+        <!-- Basic Info -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-pencil" style="margin-right:7px; color:var(--zinc);"></i>Bug Information</h6>
             </div>
+            <div style="padding:20px 22px; display:flex; flex-direction:column; gap:16px;">
 
-            <div class="mb-3">
-                <label class="form-label">Steps to Reproduce</label>
-                <textarea name="steps"
-                          class="form-control"
-                          rows="4"
-                          placeholder="1. Open login page&#10;2. Enter valid credentials&#10;3. Click Login"
-                          required></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Expected Result</label>
-                <textarea name="expected"
-                          class="form-control"
-                          rows="3"
-                          placeholder="User should be logged in successfully"
-                          required></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Actual Result</label>
-                <textarea name="actual"
-                          class="form-control"
-                          rows="3"
-                          placeholder="Nothing happens after clicking login"
-                          required></textarea>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Severity</label>
-                    <select name="severity" class="form-select">
-                        <option>Critical</option>
-                        <option>Major</option>
-                        <option>Minor</option>
-                    </select>
+                <div>
+                    <label class="form-label">Bug Title <span style="color:var(--red);">*</span></label>
+                    <input type="text"
+                           name="title"
+                           class="form-control"
+                           placeholder="e.g. Login button not responding on click"
+                           required>
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Priority</label>
+                <div>
+                    <label class="form-label">Steps to Reproduce <span style="color:var(--red);">*</span></label>
+                    <textarea name="steps"
+                              class="form-control"
+                              rows="5"
+                              placeholder="1. Open the login page&#10;2. Enter valid credentials&#10;3. Click the Login button&#10;4. Observe the result"
+                              required></textarea>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:5px;">
+                        <i class="bi bi-info-circle"></i> Write each step on a new line for clarity
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-arrow-left-right" style="margin-right:7px; color:var(--zinc);"></i>Test Results</h6>
+            </div>
+            <div style="padding:20px 22px; display:flex; flex-direction:column; gap:16px;">
+
+                <div>
+                    <label class="form-label">
+                        <i class="bi bi-check2-circle" style="color:var(--green); margin-right:4px;"></i>
+                        Expected Result <span style="color:var(--red);">*</span>
+                    </label>
+                    <textarea name="expected"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Describe what should have happened..."
+                              required></textarea>
+                </div>
+
+                <div>
+                    <label class="form-label">
+                        <i class="bi bi-x-circle" style="color:var(--red); margin-right:4px;"></i>
+                        Actual Result <span style="color:var(--red);">*</span>
+                    </label>
+                    <textarea name="actual"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Describe what actually happened..."
+                              required></textarea>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Screenshot -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-image" style="margin-right:7px; color:var(--zinc);"></i>Screenshot <span style="font-weight:400; color:var(--text-muted); font-size:11px;">(optional)</span></h6>
+            </div>
+            <div style="padding:20px 22px;">
+
+                <label class="form-label">Attach a screenshot of the bug</label>
+
+                <!-- Drop zone -->
+                <div id="dropZone"
+                     style="border: 2px dashed var(--border); border-radius:var(--radius); padding:28px 20px;
+                            text-align:center; cursor:pointer; transition: border-color var(--transition), background var(--transition);"
+                     onclick="document.getElementById('screenshotInput').click()"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event)">
+
+                    <div id="dropDefault">
+                        <i class="bi bi-cloud-upload" style="font-size:28px; color:var(--text-muted); display:block; margin-bottom:8px;"></i>
+                        <div style="font-size:13.5px; color:var(--text-secondary); margin-bottom:4px;">
+                            Click to upload or drag & drop
+                        </div>
+                        <div style="font-size:12px; color:var(--text-muted);">
+                            PNG, JPG, JPEG, GIF up to 10MB
+                        </div>
+                    </div>
+
+                    <div id="dropPreview" style="display:none;">
+                        <img id="previewImg" src="#" alt="Preview"
+                             style="max-height:160px; max-width:100%; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                        <div id="previewName"
+                             style="font-size:12px; color:var(--text-muted); margin-top:8px;"></div>
+                        <button type="button" onclick="clearFile(event)"
+                                style="font-size:12px; color:var(--red); background:none; border:none; cursor:pointer; margin-top:4px;">
+                            <i class="bi bi-x-circle"></i> Remove
+                        </button>
+                    </div>
+                </div>
+
+                <input type="file"
+                       id="screenshotInput"
+                       name="screenshot"
+                       accept="image/*"
+                       style="display:none;"
+                       onchange="handleFileSelect(this)">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Column — Settings -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Classification -->
+        <div class="card">
+            <div class="card-header-bar">
+                <h6><i class="bi bi-tag" style="margin-right:7px; color:var(--zinc);"></i>Classification</h6>
+            </div>
+            <div style="padding:18px 20px; display:flex; flex-direction:column; gap:14px;">
+
+                <div>
+                    <label class="form-label">Severity <span style="color:var(--red);">*</span></label>
+                    <select name="severity" class="form-select" id="severitySelect" onchange="updateSeverityBadge()">
+                        <option value="Critical">Critical</option>
+                        <option value="Major">Major</option>
+                        <option value="Minor">Minor</option>
+                    </select>
+                    <div id="severityHint" style="margin-top:7px; font-size:12px; padding:7px 10px; border-radius:var(--radius-sm); background:var(--red-bg); color:var(--red); border:1px solid var(--red-border);">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span id="severityText">Blocks core functionality or causes data loss</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Priority <span style="color:var(--red);">*</span></label>
                     <select name="priority" class="form-select">
-                        <option>High</option>
-                        <option>Medium</option>
-                        <option>Low</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
                     </select>
                 </div>
-            </div>
 
-            <div class="mb-4">
-                <label class="form-label">Screenshot (optional)</label>
-                <input type="file" name="screenshot" class="form-control">
-            </div>
+                <div style="background:var(--surface-2); border:1px solid var(--border-light); border-radius:var(--radius-sm); padding:10px 12px;">
+                    <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:6px;">Initial Status</div>
+                    <div style="display:flex; align-items:center; gap:7px;">
+                        <i class="bi bi-circle-fill" style="font-size:7px; color:var(--amber);"></i>
+                        <span style="font-size:13px; font-weight:500;">Open</span>
+                    </div>
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:3px;">
+                        All new bugs start as Open
+                    </div>
+                </div>
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-danger">
-                    Submit Bug
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="card">
+            <div style="padding:18px 20px; display:flex; flex-direction:column; gap:10px;">
+                <button type="submit" class="btn btn-primary w-full">
+                    <i class="bi bi-bug-fill"></i> Submit Bug
                 </button>
-                <a href="/bugs" class="btn btn-outline-secondary">
-                    Cancel
+                <a href="/bugs" class="btn btn-outline w-full" style="justify-content:center;">
+                    <i class="bi bi-x"></i> Cancel
                 </a>
             </div>
+        </div>
 
-        </form>
+        <!-- Tips -->
+        <div style="background:var(--surface-2); border:1px solid var(--border-light); border-radius:var(--radius-lg); padding:16px 18px;">
+            <div style="font-size:11px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.7px; color:var(--text-muted); margin-bottom:10px;">
+                <i class="bi bi-lightbulb"></i> Tips
+            </div>
+            <ul style="font-size:12.5px; color:var(--text-muted); padding-left:16px; margin:0; line-height:1.9;">
+                <li>Be specific and concise in the title</li>
+                <li>Number your reproduction steps</li>
+                <li>Include browser/device info if relevant</li>
+                <li>Attach a screenshot whenever possible</li>
+            </ul>
+        </div>
 
     </div>
 </div>
+</form>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ── Severity hint text ────────────────────────────────────
+    const severityHints = {
+        Critical: { text: 'Blocks core functionality or causes data loss',   bg: 'var(--red-bg)',   color: 'var(--red)',   border: 'var(--red-border)' },
+        Major:    { text: 'Major feature broken but workaround exists',       bg: 'var(--amber-bg)', color: 'var(--amber)', border: 'var(--amber-border)' },
+        Minor:    { text: 'Minor issue with minimal impact on functionality', bg: 'var(--zinc-bg)',  color: 'var(--zinc)',  border: 'var(--border)' },
+    };
+
+    function updateSeverityBadge() {
+        const val  = document.getElementById('severitySelect').value;
+        const hint = document.getElementById('severityHint');
+        const txt  = document.getElementById('severityText');
+        const h    = severityHints[val];
+        hint.style.background   = h.bg;
+        hint.style.color        = h.color;
+        hint.style.borderColor  = h.border;
+        txt.textContent         = h.text;
+    }
+
+    // ── File upload / drag-drop ───────────────────────────────
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) showPreview(input.files[0]);
+    }
+
+    function showPreview(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('previewName').textContent = file.name;
+            document.getElementById('dropDefault').style.display = 'none';
+            document.getElementById('dropPreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearFile(e) {
+        e.stopPropagation();
+        document.getElementById('screenshotInput').value = '';
+        document.getElementById('dropDefault').style.display = 'block';
+        document.getElementById('dropPreview').style.display = 'none';
+        document.getElementById('dropZone').style.borderColor = 'var(--border)';
+        document.getElementById('dropZone').style.background  = '';
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        document.getElementById('dropZone').style.borderColor = 'var(--accent)';
+        document.getElementById('dropZone').style.background  = 'var(--surface-2)';
+    }
+
+    function handleDragLeave(e) {
+        document.getElementById('dropZone').style.borderColor = 'var(--border)';
+        document.getElementById('dropZone').style.background  = '';
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        handleDragLeave(e);
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('screenshotInput').files = dt.files;
+            showPreview(file);
+        }
+    }
+
+    // ── Responsive layout ─────────────────────────────────────
+    function adjustLayout() {
+        const grid = document.querySelector('form > div');
+        if (!grid) return;
+        grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 320px';
+    }
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
+</script>
 {% endblock %}

@@ -1,96 +1,163 @@
 {% extends "base.html" %}
+{% block breadcrumb %}Bugs{% endblock %}
+
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">🐞 Bugs</h4>
-    <a href="/add-bug" class="btn btn-primary btn-sm">+ Add New Bug</a>
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Bug Tracker</h1>
+        <p class="page-subtitle">Log and manage all defects found during testing</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        <form method="post" action="/delete-all-bugs"
+              onsubmit="return confirm('Delete ALL bugs? This cannot be undone.');">
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash3"></i> Delete All
+            </button>
+        </form>
+        <a href="/export-bugs" class="btn btn-outline btn-sm">
+            <i class="bi bi-file-earmark-excel"></i> Export
+        </a>
+        <a href="/add-bug" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus"></i> Add Bug
+        </a>
+    </div>
 </div>
 
-<!-- Filters -->
-<form method="get" class="card shadow-sm mb-3">
-    <div class="card-body">
-        <div class="row g-3 align-items-end">
+<!-- ── Filter Bar ────────────────────────────────────────────── -->
+<div class="card mb-4">
+    <form method="get" style="padding: 14px 18px;">
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
 
-            <div class="col-md-3">
-                <label class="form-label mb-1">Status</label>
-                <select name="status" class="form-select form-select-sm">
-                    <option value="">All</option>
+            <div style="flex:1; min-width:140px;">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
                     <option value="Open"   {% if request.args.get('status')=='Open' %}selected{% endif %}>Open</option>
                     <option value="Fixed"  {% if request.args.get('status')=='Fixed' %}selected{% endif %}>Fixed</option>
                     <option value="Closed" {% if request.args.get('status')=='Closed' %}selected{% endif %}>Closed</option>
                 </select>
             </div>
 
-            <div class="col-md-3">
-                <label class="form-label mb-1">Priority</label>
-                <select name="priority" class="form-select form-select-sm">
-                    <option value="">All</option>
+            <div style="flex:1; min-width:140px;">
+                <label class="form-label">Priority</label>
+                <select name="priority" class="form-select">
+                    <option value="">All Priorities</option>
                     <option value="High"   {% if request.args.get('priority')=='High' %}selected{% endif %}>High</option>
                     <option value="Medium" {% if request.args.get('priority')=='Medium' %}selected{% endif %}>Medium</option>
                     <option value="Low"    {% if request.args.get('priority')=='Low' %}selected{% endif %}>Low</option>
                 </select>
             </div>
 
-            <div class="col-md-3">
-                <button class="btn btn-outline-dark btn-sm w-100">Apply Filters</button>
+            <div style="display:flex; gap:8px;">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <a href="/bugs" class="btn btn-outline btn-sm">
+                    <i class="bi bi-x"></i> Clear
+                </a>
             </div>
 
         </div>
-    </div>
-</form>
+    </form>
+</div>
 
-<!-- Bug Table -->
-<div class="card shadow-sm">
-    <div class="card-body p-0">
-        <table class="table table-hover table-bordered mb-0">
-            <thead class="table-light">
+<!-- ── Bug Table ─────────────────────────────────────────────── -->
+<div class="card">
+    <div class="card-header-bar">
+        <h6>
+            <i class="bi bi-bug" style="margin-right:6px; color:var(--red);"></i>
+            All Bugs
+        </h6>
+        <span class="badge badge-zinc">{{ bugs|length }} record{{ 's' if bugs|length != 1 }}</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
                 <tr>
-                    <th>#</th>
+                    <th style="width:44px;">#</th>
                     <th>Title</th>
                     <th>Severity</th>
                     <th>Priority</th>
+                    <th>Status</th>
                     <th>Expected</th>
                     <th>Actual</th>
-                    <th>Status</th>
-                    <th width="90">Action</th>
+                    <th style="width:80px; text-align:center;">Action</th>
                 </tr>
             </thead>
             <tbody>
             {% for bug in bugs %}
                 <tr>
-                    <td>{{ loop.index }}</td>
+                    <td class="muted">{{ loop.index }}</td>
 
                     <td>
-                        <a href="/bug/{{ bug[0] }}" class="text-decoration-none">
+                        <a href="/bug/{{ bug[0] }}"
+                           style="color:var(--text-primary); font-weight:500;"
+                           class="row-link">
                             {{ bug[1] }}
                         </a>
                     </td>
 
-                    <td>{{ bug[5] }}</td>
-                    <td>{{ bug[8] }}</td>
-
-                    <td class="text-truncate" style="max-width:200px;">
-                        {{ bug[3] }}
+                    <td>
+                        {% if bug[5] == 'Critical' %}
+                            <span class="badge badge-red"><i class="bi bi-circle-fill" style="font-size:6px;"></i>Critical</span>
+                        {% elif bug[5] == 'Major' %}
+                            <span class="badge badge-amber"><i class="bi bi-circle-fill" style="font-size:6px;"></i>Major</span>
+                        {% else %}
+                            <span class="badge badge-zinc"><i class="bi bi-circle-fill" style="font-size:6px;"></i>Minor</span>
+                        {% endif %}
                     </td>
 
-                    <td class="text-truncate" style="max-width:200px;">
-                        {{ bug[4] }}
+                    <td>
+                        {% if bug[8] == 'High' %}
+                            <span class="badge badge-red">High</span>
+                        {% elif bug[8] == 'Medium' %}
+                            <span class="badge badge-amber">Medium</span>
+                        {% else %}
+                            <span class="badge badge-zinc">Low</span>
+                        {% endif %}
                     </td>
 
-                    <td>{{ bug[6] }}</td>
+                    <td>
+                        {% if bug[6] == 'Open' %}
+                            <span class="badge badge-amber">Open</span>
+                        {% elif bug[6] == 'Fixed' %}
+                            <span class="badge badge-blue">Fixed</span>
+                        {% else %}
+                            <span class="badge badge-green">Closed</span>
+                        {% endif %}
+                    </td>
 
-                    <td class="text-center">
-                        <a href="/delete-bug/{{ bug[0] }}"
-                           class="btn btn-sm btn-outline-danger"
-                           onclick="return confirm('Delete this bug?');">
-                           Delete
-                        </a>
+                    <td class="td-truncate muted">{{ bug[3] }}</td>
+                    <td class="td-truncate muted">{{ bug[4] }}</td>
+
+                    <td style="text-align:center;">
+                        <form method="post" action="/delete-bug/{{ bug[0] }}"
+                              onsubmit="return confirm('Delete this bug?');"
+                              style="display:inline;">
+                            <button type="submit" class="btn btn-ghost btn-sm"
+                                    style="color:var(--red); padding:4px 8px;"
+                                    title="Delete">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="8" class="text-center text-muted">
-                        No bugs found
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <i class="bi bi-bug"></i>
+                            <p>No bugs found.
+                                {% if request.args.get('status') or request.args.get('priority') %}
+                                    Try clearing your filters.
+                                {% else %}
+                                    <a href="/add-bug" style="color:var(--accent);">Log your first bug →</a>
+                                {% endif %}
+                            </p>
+                        </div>
                     </td>
                 </tr>
             {% endfor %}
@@ -99,11 +166,19 @@
     </div>
 </div>
 
-<!-- Export -->
-<div class="mt-3 text-end">
-    <a href="/export-bugs" class="btn btn-outline-success btn-sm">
-        Export to Excel
-    </a>
-</div>
+{% endblock %}
 
+{% block scripts %}
+<script>
+    // Make entire row clickable (except the delete button cell)
+    document.querySelectorAll('.data-table tbody tr').forEach(row => {
+        const link = row.querySelector('.row-link');
+        if (!link) return;
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', e => {
+            if (e.target.closest('form') || e.target.closest('button')) return;
+            window.location.href = link.href;
+        });
+    });
+</script>
 {% endblock %}

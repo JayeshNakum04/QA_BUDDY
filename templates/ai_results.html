@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block breadcrumb %}AI QA Agent / Scan Results{% endblock %}
+
+{% block content %}
+
+<!-- ── Page Header ───────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">AI Scan Results</h1>
+        <p class="page-subtitle">Automated scan complete — results logged to Bug Tracker</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="/ai-agent" class="btn btn-outline btn-sm">
+            <i class="bi bi-arrow-repeat"></i> New Scan
+        </a>
+        <a href="/bugs" class="btn btn-primary btn-sm">
+            <i class="bi bi-bug"></i> View Bug Tracker
+        </a>
+    </div>
+</div>
+
+<!-- ── Summary Stats ─────────────────────────────────────────── -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:12px; margin-bottom:24px;">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-globe"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ scanned }}</div>
+            <div class="stat-label">Pages Scanned</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon {{ 'red' if bugs|length > 0 else 'green' }}">
+            <i class="bi bi-bug{{ '-fill' if bugs|length > 0 else '' }}"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ bugs|length }}</div>
+            <div class="stat-label">Bugs Detected</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ scanned - bugs|length }}</div>
+            <div class="stat-label">Pages OK</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon {{ 'red' if bugs|selectattr('severity','equalto','Critical')|list|length > 0 else 'zinc' }}">
+            <i class="bi bi-exclamation-triangle{{ '-fill' if bugs|selectattr('severity','equalto','Critical')|list|length > 0 else '' }}"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ bugs|selectattr('severity','equalto','Critical')|list|length }}</div>
+            <div class="stat-label">Critical Bugs</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── No bugs found ─────────────────────────────────────────── -->
+{% if not bugs %}
+<div class="card">
+    <div style="padding:56px 24px; text-align:center;">
+        <div style="width:64px; height:64px; background:var(--green-bg); border:1px solid var(--green-border);
+                    border-radius:50%; display:flex; align-items:center; justify-content:center;
+                    margin:0 auto 16px;">
+            <i class="bi bi-shield-check" style="font-size:28px; color:var(--green);"></i>
+        </div>
+        <h3 style="font-size:16px; font-weight:600; margin:0 0 8px; color:var(--text-primary);">
+            No Issues Detected
+        </h3>
+        <p style="font-size:13.5px; color:var(--text-muted); margin:0 0 20px; max-width:380px; margin-inline:auto;">
+            All {{ scanned }} scanned pages returned successful responses.
+            No HTTP errors or unreachable pages were found.
+        </p>
+        <a href="/ai-agent" class="btn btn-outline btn-sm">
+            <i class="bi bi-arrow-repeat"></i> Scan Another Site
+        </a>
+    </div>
+</div>
+
+{% else %}
+
+<!-- ── Alert: bugs saved ──────────────────────────────────────── -->
+<div class="alert alert-success" style="margin-bottom:16px;">
+    <i class="bi bi-check-circle-fill"></i>
+    <span>
+        <strong>{{ bugs|length }} bug{{ 's' if bugs|length != 1 }}</strong>
+        automatically saved to your Bug Tracker.
+    </span>
+</div>
+
+<!-- ── Results Table ─────────────────────────────────────────── -->
+<div class="card">
+    <div class="card-header-bar">
+        <h6>
+            <i class="bi bi-robot" style="margin-right:6px; color:var(--green);"></i>
+            Detected Issues
+        </h6>
+        <span class="badge badge-red">{{ bugs|length }} bug{{ 's' if bugs|length != 1 }}</span>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:44px;">#</th>
+                    <th>Bug Title</th>
+                    <th>Severity</th>
+                    <th>URL</th>
+                    <th>Actual Result</th>
+                    <th>AI Summary</th>
+                    <th style="width:90px; text-align:center;">Screenshot</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for b in bugs %}
+                <tr>
+                    <td class="muted">{{ loop.index }}</td>
+
+                    <td style="font-weight:500; color:var(--text-primary);">
+                        {{ b.title }}
+                    </td>
+
+                    <td>
+                        {% if b.severity == 'Critical' %}
+                            <span class="badge badge-red">
+                                <i class="bi bi-circle-fill" style="font-size:6px;"></i> Critical
+                            </span>
+                        {% elif b.severity in ['High', 'Major'] %}
+                            <span class="badge badge-amber">
+                                <i class="bi bi-circle-fill" style="font-size:6px;"></i> {{ b.severity }}
+                            </span>
+                        {% else %}
+                            <span class="badge badge-zinc">{{ b.severity }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{{ b.url }}" target="_blank"
+                           style="font-size:12px; font-family:'DM Mono',monospace;
+                                  color:var(--blue); word-break:break-all;"
+                           title="{{ b.url }}">
+                            {{ b.url | truncate(45) }}
+                        </a>
+                    </td>
+
+                    <td class="muted" style="font-size:12.5px; max-width:200px;">
+                        <div class="td-truncate">{{ b.actual }}</div>
+                    </td>
+
+                    <td style="font-size:12.5px; color:var(--text-secondary); max-width:260px;">
+                        <div style="display:-webkit-box; -webkit-line-clamp:3;
+                                    -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">
+                            {{ b.summary }}
+                        </div>
+                    </td>
+
+                    <td style="text-align:center;">
+                        {% if b.screenshot %}
+                            <a href="/{{ b.screenshot }}" target="_blank"
+                               class="btn btn-outline btn-sm"
+                               style="font-size:11px; padding:4px 8px;">
+                                <i class="bi bi-image"></i> View
+                            </a>
+                        {% else %}
+                            <span style="font-size:12px; color:var(--text-muted);">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── Confidence breakdown ───────────────────────────────────── -->
+<div class="card" style="margin-top:14px;">
+    <div class="card-header-bar">
+        <h6><i class="bi bi-graph-up" style="margin-right:7px; color:var(--zinc);"></i>Confidence Scores</h6>
+    </div>
+    <div style="padding:16px 20px; display:flex; flex-direction:column; gap:10px;">
+        {% for b in bugs %}
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:12.5px; color:var(--text-secondary); min-width:200px;
+                        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                {{ b.title }}
+            </div>
+            <div style="flex:1; height:6px; background:var(--border); border-radius:99px; overflow:hidden;">
+                {% set pct = (b.confidence * 100) | int %}
+                <div style="height:100%; width:{{ pct }}%;
+                            background:{% if pct >= 90 %}var(--red){% elif pct >= 70 %}var(--amber){% else %}var(--green){% endif %};
+                            border-radius:99px; transition:width .5s ease;"></div>
+            </div>
+            <div style="font-size:11.5px; font-family:'DM Mono',monospace; font-weight:600;
+                        min-width:38px; text-align:right;
+                        color:{% if pct >= 90 %}var(--red){% elif pct >= 70 %}var(--amber){% else %}var(--green){% endif %};">
+                {{ pct }}%
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ── Actions row ───────────────────────────────────────────── -->
+<div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+    <a href="/bugs" class="btn btn-primary btn-sm">
+        <i class="bi bi-bug"></i> View All Bugs
+    </a>
+    <a href="/export-bugs" class="btn btn-outline btn-sm">
+        <i class="bi bi-file-earmark-excel"></i> Export Bugs
+    </a>
+    <a href="/ai-agent" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-repeat"></i> Run Another Scan
+    </a>
+</div>
+
+{% endif %}
+
+{% endblock %}
