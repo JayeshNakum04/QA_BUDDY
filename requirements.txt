@@ -4,3 +4,4 @@ gunicorn
 gunicorn
 reportlab
 requests
+beautifulsoup4
