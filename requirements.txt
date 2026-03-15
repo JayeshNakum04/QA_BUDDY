@@ -1,7 +1,7 @@
 flask
 openpyxl
 gunicorn
-gunicorn
+playwright
 reportlab
 requests
 beautifulsoup4
