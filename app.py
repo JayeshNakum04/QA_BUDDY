@@ -3,6 +3,9 @@
 #  Modern PDF generation with ReportLab Platypus
 # ============================================================
 
+
+from ai.crawler import crawl_site, detect_bugs, generate_summary
+import sqlite3  # ensure this is imported
 from flask import Flask, render_template, request, redirect, url_for, send_file
 import sqlite3
 from werkzeug.utils import secure_filename
@@ -30,6 +33,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from playwright.sync_api import sync_playwright
+
 
 
 # ── Colour palette ────────────────────────────────────────────
@@ -156,6 +160,10 @@ def make_doc(file_path):
     )
 
 
+
+
+
+
 # ── App setup ─────────────────────────────────────────────────
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -167,6 +175,24 @@ os.makedirs('export/screenshots', exist_ok=True)
 
 def get_db():
     return sqlite3.connect('database.db')
+
+
+@app.context_processor
+def inject_helpers():
+    def screenshot_path(filename):
+        """Return correct static path for any screenshot filename."""
+        if not filename:
+            return None
+        # AI scanner saves as scan_*.png → screenshots/
+        # Manual uploads → uploads/
+        if filename.startswith('scan_'):
+            return f'screenshots/{filename}'
+        return f'uploads/{filename}'
+    return dict(screenshot_path=screenshot_path)
+
+
+
+
 
 
 # ── HOME ─────────────────────────────────────────────────────
@@ -322,6 +348,7 @@ def export_bugs():
 
     screenshots_dir = "export/screenshots"
     os.makedirs(screenshots_dir, exist_ok=True)
+    os.makedirs("export", exist_ok=True)
 
     wb  = Workbook()
     ws  = wb.active
@@ -341,12 +368,30 @@ def export_bugs():
 
     for i, bug in enumerate(bugs, 1):
         scr = "Not Available"
-        if bug[7]:
-            src = f"static/uploads/{bug[7]}"
+        
+        screenshot_filename = bug[7]  # screenshot column from DB
+        
+        if screenshot_filename:
+            # ✅ FIX: crawler saves to static/screenshots/, not static/uploads/
+            src = f"static/screenshots/{screenshot_filename}"
+            
+            print(f"[EXPORT] Looking for screenshot: {src}")
+            print(f"[EXPORT] File exists: {os.path.exists(src)}")
+            
             if os.path.exists(src):
-                shutil.copy(src, f"{screenshots_dir}/{bug[7]}")
-                scr = f'=HYPERLINK("screenshots/{bug[7]}","Open Screenshot")'
+                dest = f"{screenshots_dir}/{screenshot_filename}"
+                shutil.copy(src, dest)
+                scr = f'=HYPERLINK("screenshots/{screenshot_filename}","Open Screenshot")'
+                print(f"[EXPORT] Screenshot copied successfully")
+            else:
+                # ✅ Show exactly why it's missing for easier debugging
+                scr = f"Missing: {screenshot_filename}"
+                print(f"[EXPORT] Screenshot file not found at: {src}")
+        else:
+            print(f"[EXPORT] Bug '{bug[1]}' has no screenshot in DB")
+
         ws.append([i, bug[1], bug[5], bug[8], bug[6], bug[2], bug[3], bug[4], scr])
+        
         for cell in ws[ws.max_row]:
             cell.border = bdr
             cell.alignment = Alignment(vertical='top', wrap_text=True)
@@ -364,7 +409,8 @@ def export_bugs():
         zf.write(excel_path, "bugs_report.xlsx")
         for f in os.listdir(screenshots_dir):
             zf.write(f"{screenshots_dir}/{f}", f"screenshots/{f}")
-    return send_file(zip_path, as_attachment=True)
+
+    return send_file(zip_path, as_attachment=True, download_name="bugs_export.zip")
 
 
 @app.route('/export-testcases')
@@ -626,112 +672,140 @@ def delete_all_docs():
 
 # ── AI AGENT ─────────────────────────────────────────────────
 
+# ── AI AGENT (Rule-Based, No LLM) ─────────────────────────────
+
 @app.route('/ai-agent')
 def ai_agent():
     return render_template('ai_agent.html')
 
 
-def crawl_site(start_url, max_pages=10):
-    visited, to_visit, pages = set(), [start_url], []
-    domain = urlparse(start_url).netloc
-    while to_visit and len(visited) < max_pages:
-        url = to_visit.pop(0)
-        if url in visited: continue
-        try:
-            res = requests.get(url, timeout=8)
-            pages.append({"url": url, "status_code": res.status_code, "html": res.text})
-            visited.add(url)
-            for a in BeautifulSoup(res.text, "html.parser").find_all("a", href=True):
-                link = urljoin(url, a["href"])
-                if urlparse(link).netloc == domain and link not in visited:
-                    to_visit.append(link)
-        except Exception as e:
-            pages.append({"url": url, "status_code": "ERROR", "error": str(e)})
-            visited.add(url)
-    return pages
-
-
-def confidence_score(status, error_text=None):
-    score = 0.6
-    if status in [500, "ERROR"]: score += 0.3
-    if status == 404:            score += 0.2
-    if error_text:               score += 0.1
-    return min(score, 1.0)
-
-
-def generate_bug_summary(bug):
-    return (f"The page at {bug['url']} failed due to "
-            f"{bug['actual'] if bug.get('actual') else 'an HTTP error'}. "
-            "This impacts user access and should be fixed.")
-
-
-def capture_screenshot(url):
-    os.makedirs("static/screenshots", exist_ok=True)
-    filename = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-    path     = f"static/screenshots/{filename}"
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page    = browser.new_page()
-            page.goto(url, timeout=10000, wait_until="load")
-            page.screenshot(path=path, full_page=True)
-            browser.close()
-        return path
-    except Exception as e:
-        print("SCREENSHOT ERROR:", e)
-        return None
-
-
-def detect_bugs(pages):
-    bugs = []
-    for page in pages:
-        url, status = page.get("url"), page.get("status_code")
-        if status == "ERROR":
-            b = {"title": "Page not reachable", "url": url, "severity": "Critical",
-                 "steps": f"1. Open browser\n2. Navigate to {url}",
-                 "expected": "Page should load successfully",
-                 "actual": page.get("error"),
-                 "confidence": confidence_score(status, page.get("error")),
-                 "screenshot": capture_screenshot(url)}
-            b["summary"] = generate_bug_summary(b); bugs.append(b)
-        elif status in [403, 404, 500]:
-            b = {"title": f"HTTP {status} error on page", "url": url,
-                 "severity": "High" if status >= 500 else "Major",
-                 "steps": f"1. Open browser\n2. Navigate to {url}",
-                 "expected": "Page should load correctly",
-                 "actual": f"Server returned HTTP {status}",
-                 "confidence": confidence_score(status),
-                 "screenshot": capture_screenshot(url)}
-            b["summary"] = generate_bug_summary(b); bugs.append(b)
-    return bugs
-
-
-def save_ai_bugs(bugs):
-    db = get_db()
-    for b in bugs:
-        db.execute(
-            "INSERT INTO bugs (title,steps,expected,actual,severity,priority,status,screenshot)"
-            " VALUES (?,?,?,?,?,?,?,?)",
-            (b["title"], b["steps"], b["expected"], b["actual"],
-             b["severity"], "Medium", "Open", b.get("screenshot"))
-        )
-    db.commit(); db.close()
-
-
 @app.route('/ai-scan', methods=['POST'])
 def ai_scan():
     target_url = request.form.get('url', '').strip()
+    print(f"\n{'='*60}")
+    print(f"[AI SCAN] URL received: '{target_url}'")
+    print(f"{'='*60}")
+    
     if not target_url:
-        return render_template("ai_results.html", bugs=[], scanned=0)
-    pages = crawl_site(target_url)
-    bugs  = detect_bugs(pages)
-    if request.args.get('severity'):
-        bugs = [b for b in bugs if b["severity"] == request.args['severity']]
-    if request.args.get('min_conf', type=float):
-        bugs = [b for b in bugs if b["confidence"] >= request.args.get('min_conf', type=float)]
-    if bugs:
-        save_ai_bugs(bugs)
+        print("[ERROR] No URL provided!")
+        return render_template("ai_results.html", bugs=[], scanned=0, error="No URL provided")
+    
+    # Add protocol if missing
+    if not target_url.startswith(('http://', 'https://')):
+        target_url = 'https://' + target_url
+        print(f"[FIX] Added https:// -> {target_url}")
+    
+    # Crawl the site
+    try:
+        pages = crawl_site(target_url, max_pages=10)
+        print(f"[RESULT] Crawled {len(pages)} pages")
+    except Exception as e:
+        print(f"[ERROR] Crawl failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return render_template("ai_results.html", bugs=[], scanned=0, error=f"Crawl failed: {str(e)}")
+    
+    # Detect bugs
+    try:
+        bugs = detect_bugs(pages)
+        print(f"[RESULT] Detected {len(bugs)} bugs")
+    except Exception as e:
+        print(f"[ERROR] Detection failed: {e}")
+        import traceback
+        traceback.print_exc()
+        bugs = []
+    
+    # Save bugs to database
+    db = get_db()
+    saved_count = 0
+    
+    for bug in bugs:
+        try:
+            # Generate summary
+            bug["summary"] = generate_summary(bug)
+            
+            # Get screenshot (might be None)
+            screenshot = bug.get("screenshot")
+            print(f"[DB] Saving bug: {bug['title']} | Screenshot: {screenshot}")
+            
+            # Insert into database
+            db.execute(
+                """INSERT INTO bugs 
+                   (title, steps, expected, actual, severity, priority, status, screenshot) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    bug["title"],
+                    bug["steps"],
+                    bug["expected"], 
+                    bug["actual"],
+                    bug["severity"],
+                    bug["priority"],
+                    "Open",
+                    screenshot
+                )
+            )
+            saved_count += 1
+            print(f"[DB] Saved successfully")
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to save bug: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    db.commit()
+    db.close()
+    print(f"[DB] Total bugs saved: {saved_count}")
+    
+    # Apply filters if provided via query params
+    severity_filter = request.args.get('severity')
+    min_conf = request.args.get('min_conf', type=float)
+    
+    if severity_filter:
+        bugs = [b for b in bugs if b["severity"] == severity_filter]
+    if min_conf:
+        bugs = [b for b in bugs if b["confidence"] >= min_conf]
+    
+    print(f"[FINAL] Rendering: {len(bugs)} bugs, {len(pages)} pages scanned")
+    print(f"{'='*60}\n")
+    
     return render_template("ai_results.html", bugs=bugs, scanned=len(pages))
+
+
+@app.route('/ai_analyze', methods=['POST'])
+def ai_analyze():
+    """Rule-based bug analysis - no AI model needed."""
+    bug_text = request.form.get("bug", "")
+    
+    # Simple keyword-based analysis
+    text_lower = bug_text.lower()
+    
+    if any(word in text_lower for word in ["crash", "500", "error", "failed", "critical", "unable to load", "exception"]):
+        severity = "Critical"
+        description = f"Critical Issue: {bug_text}\n\nThis appears to be a system-level failure requiring immediate investigation."
+    elif any(word in text_lower for word in ["404", "not found", "missing", "broken link", "unavailable"]):
+        severity = "High"
+        description = f"High Priority: {bug_text}\n\nResource not found - verify URLs and resource availability."
+    elif any(word in text_lower for word in ["slow", "delay", "timeout", "performance", "lag"]):
+        severity = "Medium"
+        description = f"Performance Issue: {bug_text}\n\nConsider optimization of loading times and server response."
+    elif any(word in text_lower for word in ["ui", "display", "alignment", "css", "style"]):
+        severity = "Low"
+        description = f"UI Issue: {bug_text}\n\nVisual discrepancy that should be fixed for better UX."
+    else:
+        severity = "Medium"
+        description = f"Issue: {bug_text}\n\nReview and verify against expected behavior."
+    
+    return f"""🔍 ANALYSIS RESULT (Rule-Based)
+
+Severity: {severity}
+
+Description:
+{description}
+
+---
+Analysis based on keyword matching. Manual review recommended for complex issues."""
+
+
 
 
 # ── ENTRY POINT ───────────────────────────────────────────────

@@ -5,6 +5,23 @@
 
 {% block content %}
 
+<style>
+.spinner {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin-top: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
 <!-- ── Page Header ───────────────────────────────────────────── -->
 <div class="page-header">
     <div>
@@ -29,8 +46,7 @@
             </div>
             <div style="padding:22px 24px;">
 
-                <form method="post" action="/ai-scan" id="scanForm" onsubmit="startScan()">
-
+                <form method="post" action="/ai-scan" id="scanForm" onsubmit="return startScan()">
                     <label class="form-label">Website URL to scan <span style="color:var(--red);">*</span></label>
 
                     <div style="display:flex; gap:10px; align-items:stretch;">
@@ -235,6 +251,12 @@
     </div>
 </div>
 
+
+
+
+
+
+
 {% endblock %}
 
 {% block scripts %}
@@ -244,14 +266,19 @@
     }
 </style>
 <script>
-    function startScan() {
+        function startScan() {
         const url = document.getElementById('urlInput').value.trim();
-        if (!url) return;
+        if (!url) return false;  // prevent submit if empty
 
+        // Show scanning state AFTER getting value (not before)
         document.getElementById('scanBtn').disabled = true;
         document.getElementById('scanBtn').innerHTML = '<i class="bi bi-hourglass-split"></i> Scanning…';
         document.getElementById('scanningState').style.display = 'block';
-        document.getElementById('urlInput').disabled = true;
+        
+        // DO NOT disable the input — disabled fields are NOT submitted with forms
+        // document.getElementById('urlInput').disabled = true;  ← THIS WAS THE BUG
+        
+        return true;  // allow form to submit
     }
 
     // Responsive layout
@@ -263,4 +290,8 @@
     adjustLayout();
     window.addEventListener('resize', adjustLayout);
 </script>
+
+<script>
+
+
 {% endblock %}

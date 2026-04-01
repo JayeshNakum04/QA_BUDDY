@@ -165,7 +165,7 @@
 
                     <td style="text-align:center;">
                         {% if b.screenshot %}
-                            <a href="/{{ b.screenshot }}" target="_blank"
+                            <a href="{{ url_for('static', filename='screenshots/' + b.screenshot) }}" target="_blank"
                                class="btn btn-outline btn-sm"
                                style="font-size:11px; padding:4px 8px;">
                                 <i class="bi bi-image"></i> View
